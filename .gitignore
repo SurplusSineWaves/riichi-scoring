@@ -1,0 +1,8 @@
+dist-newstyle/
+*.hi
+*.o
+*.prof
+*.aux
+*.hp
+.cabal-sandbox/
+cabal.project.local
