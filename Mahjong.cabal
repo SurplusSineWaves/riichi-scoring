@@ -10,7 +10,7 @@ cabal-version: 3.0
 --   http://haskell.org/cabal/users-guide/
 --
 -- The name of the package.
-name: Mahjong
+name: riichi-scoring
 -- The package version.
 -- See the Haskell package versioning policy (PVP) for standards
 -- guiding when and how versions should be incremented.
@@ -63,7 +63,7 @@ library
 
   default-language: GHC2024
 
-executable Mahjong
+executable riichi
   -- Import common warning flags.
   import: warnings
   -- .hs or .lhs file containing the Main module.
@@ -74,10 +74,10 @@ executable Mahjong
   -- other-extensions:
   -- Other library packages from which modules are imported.
   build-depends:
-    Mahjong,
     base ^>=4.20.2.0,
     containers >=0.7 && <0.8,
     mtl >=2.3.1 && <2.4,
+    riichi-scoring,
 
   -- Directories containing source files.
   hs-source-dirs: app
