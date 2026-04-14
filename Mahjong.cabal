@@ -11,6 +11,8 @@ cabal-version: 3.0
 --
 -- The name of the package.
 name: riichi-scoring
+homepage: https://github.com/SurplusSineWaves/riichi-scoring
+bug-reports: https://github.com/SurplusSineWaves/riichi-scoring/issues
 -- The package version.
 -- See the Haskell package versioning policy (PVP) for standards
 -- guiding when and how versions should be incremented.
