@@ -13,7 +13,7 @@ main = do
     case args of
         [] -> putStrLn "No arguments supplied"
         (arg : [])
-            | (arg `elem` ["--help", "-h", "help"]) -> putStrLn "Command Mahjong:\n\tPossible subcommands: yaku, waits, score (default = yaku)\n\nUsage: mahjong <subcommand> \"<hand>\""
+            | (arg `elem` ["--help", "-h", "help"]) -> putStrLn "Command riichi:\n\tPossible subcommands: yaku, waits, score (default = yaku)\n\nUsage: mahjong <subcommand> \"<hand>\""
             | (arg `elem` ["yaku", "waits", "score"]) -> putStrLn "Missing hand"
             | (head arg) `elem` list -> displayHandYaku $ mkHand arg
             | otherwise -> putStrLn "Command not recognised"
