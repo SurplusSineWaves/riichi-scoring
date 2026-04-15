@@ -67,8 +67,8 @@ library riichi-lib
   hs-source-dirs: src
   build-depends:
     base >=4.19.2.0 && <5,
-    containers >=0.7 && <0.8,
-    mtl >=2.3.1 && <2.4,
+    containers >=0.6.8 && <0.8,
+    mtl >=2.2.2 && <2.4,
 
   default-language: GHC2021
 
@@ -84,8 +84,8 @@ executable riichi
   -- Other library packages from which modules are imported.
   build-depends:
     base >=4.19.2.0 && <5,
-    containers >=0.7 && <0.8,
-    mtl >=2.3.1 && <2.4,
+    containers >=0.6.8 && <0.8,
+    mtl >=2.2.2 && <2.4,
     riichi-lib,
 
   -- Directories containing source files.
