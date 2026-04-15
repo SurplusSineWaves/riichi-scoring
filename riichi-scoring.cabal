@@ -35,10 +35,14 @@ author: ZBW
 maintainer: surplussinewaves@gmail.com
 -- A copyright notice.
 -- copyright:
-category: Tool
+category: Utility, CLI, Data, Library
 build-type: Simple
 -- Extra doc files to be distributed with the package, such as a CHANGELOG or a README.
 extra-doc-files: CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/SurplusSineWaves/riichi-scoring.git
 
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
