@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-
 module Yaku where
 
 import Data.Either (lefts, rights)

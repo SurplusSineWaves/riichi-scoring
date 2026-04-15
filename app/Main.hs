@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-
 module Main (main) where
 
 import Display
@@ -22,14 +20,3 @@ main = do
             | arg1 == "waits" -> displayHandWaits $ mkHand arg2
             | arg1 == "score" -> displayHandScore $ mkHand arg2
             | otherwise -> putStrLn "Command not recognised"
-
--- if (head (head args) `elem` ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'N', 'E', 'W', 'S', 'r', 'g', 'w'])
---     then do
---         let hand = mkHand $ head $ args
---         displayHandYaku hand
---     else
---         if head args == "yaku"
---             then do
---                 let hand = mkHand $ head $ tail $ args
---                 displayHandYaku hand
---             else putStrLn ("Command not recognised.")
