@@ -66,3 +66,5 @@ Need to separate these two functions - getting the yaku of a hand, and
 displaying those yaku in the CLI. Furthermore, many functions performed by the 
 display file really ought to be part of the CLI but not the Library.
 Major refactors are needed. As of now we just have a working prototype.
+
+Also need to add Haddock doc strings
