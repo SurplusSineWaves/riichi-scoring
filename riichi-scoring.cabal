@@ -20,7 +20,7 @@ bug-reports: https://github.com/SurplusSineWaves/riichi-scoring/issues
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version: 0.1.0.1
+version: 0.2.0.0
 -- A short (one-line) description of the package.
 synopsis: A CLI tool for interpreting and scoring Riichi Mahjong hands.
 -- A longer description of the package.
@@ -51,19 +51,19 @@ common warnings
 
 library
   exposed-modules:
-    Display
-    Meld
-    Scoring
-    Tile
-    Waits
-    Yaku
+    Riichi.Display
+    Riichi.Meld
+    Riichi.Scoring
+    Riichi.Tile
+    Riichi.Waits
+    Riichi.Yaku
 
   other-modules:
-    ColourStrings
+    Riichi.ColourStrings
 
   hs-source-dirs: src
   build-depends:
-    base ^>=4.19.2.0,
+    base >=4.19.2.0 && <5,
     containers >=0.7 && <0.8,
     mtl >=2.3.1 && <2.4,
 
@@ -80,7 +80,7 @@ executable riichi
   -- other-extensions:
   -- Other library packages from which modules are imported.
   build-depends:
-    base ^>=4.19.2.0,
+    base >=4.19.2.0 && <5,
     containers >=0.7 && <0.8,
     mtl >=2.3.1 && <2.4,
     riichi-scoring,

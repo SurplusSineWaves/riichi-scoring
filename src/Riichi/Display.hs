@@ -1,14 +1,14 @@
-module Display where
+module Riichi.Display where
 
-import ColourStrings
 import Data.Function
 import Data.List (intersperse, sort)
 import Data.Monoid (getSum)
-import Meld
-import Scoring
-import Tile
-import Waits
-import Yaku
+import Riichi.ColourStrings
+import Riichi.Meld
+import Riichi.Scoring
+import Riichi.Tile
+import Riichi.Waits
+import Riichi.Yaku
 
 displayHandYaku :: Hand -> IO ()
 displayHandYaku hand = do

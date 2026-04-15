@@ -1,11 +1,11 @@
-module Yaku where
+module Riichi.Yaku where
 
 import Data.Either (lefts, rights)
 import Data.Function
 import Data.List
 import Data.Set qualified as Set
-import Meld
-import Tile
+import Riichi.Meld
+import Riichi.Tile
 
 -- Note that Yaku functions that operate on Hands needn't check that the
 -- hand is actually valid to begin with. This should be done by the caller,

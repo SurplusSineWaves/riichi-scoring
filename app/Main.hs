@@ -1,7 +1,7 @@
 module Main (main) where
 
-import Display
-import Meld
+import Riichi.Display
+import Riichi.Meld
 import System.Environment (getArgs)
 
 main :: IO ()

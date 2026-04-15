@@ -1,9 +1,9 @@
-module Waits where
+module Riichi.Waits where
 
 import Data.Function
 import Data.List
-import Meld
-import Tile
+import Riichi.Meld
+import Riichi.Tile
 
 getWaits :: Hand -> [Tile]
 getWaits hand =

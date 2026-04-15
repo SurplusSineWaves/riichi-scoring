@@ -1,4 +1,4 @@
-module ColourStrings where
+module Riichi.ColourStrings where
 
 toRed :: String -> String
 toRed s = "\o33[31m" ++ s ++ "\o33[0m"

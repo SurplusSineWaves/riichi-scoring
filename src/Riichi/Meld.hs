@@ -1,9 +1,9 @@
-module Meld where
+module Riichi.Meld where
 
 import Data.Function
 import Data.List
 import Data.Set qualified as Set
-import Tile
+import Riichi.Tile
 
 type Hand = [Tile]
 

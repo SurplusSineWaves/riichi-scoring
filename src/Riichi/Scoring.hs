@@ -1,14 +1,14 @@
-module Scoring where
+module Riichi.Scoring where
 
-import ColourStrings
+import Riichi.ColourStrings
 import Control.Monad (when)
 import Control.Monad.Writer
 import Data.Function ((&))
 import Data.Map qualified as M
 import Data.Monoid (Sum)
-import Meld
-import Tile
-import Yaku
+import Riichi.Meld
+import Riichi.Tile
+import Riichi.Yaku
 
 type YakumanCount = Sum Int
 type Han = Sum Int

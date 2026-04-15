@@ -1,4 +1,4 @@
-module Tile where
+module Riichi.Tile where
 
 import Data.Function
 import Data.List (intersperse)
