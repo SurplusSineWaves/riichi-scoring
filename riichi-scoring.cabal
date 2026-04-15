@@ -49,7 +49,7 @@ source-repository head
 common warnings
   ghc-options: -Wall
 
-library
+library riichi-lib
   exposed-modules:
     Riichi.Display
     Riichi.Meld
@@ -83,9 +83,21 @@ executable riichi
     base >=4.19.2.0 && <5,
     containers >=0.7 && <0.8,
     mtl >=2.3.1 && <2.4,
-    riichi-scoring,
+    riichi-lib,
 
   -- Directories containing source files.
   hs-source-dirs: app
   -- Base language which the package is written in.
+  default-language: GHC2021
+
+test-suite riichi-scoring-test
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Test.hs
+  build-depends:
+    base >=4.19.2.0 && <5,
+    riichi-lib,
+    tasty,
+    tasty-hunit,
+
   default-language: GHC2021
