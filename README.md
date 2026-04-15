@@ -26,3 +26,5 @@ The CLI tool supplied is the riichi command. Help information is as follows:
         also in this format.
 
 Internal libraries are also exposed.
+
+Hackage page: https://hackage.haskell.org/package/riichi-scoring
