@@ -100,7 +100,7 @@ test-suite riichi-scoring-test
   build-depends:
     base >=4.19.2.0 && <5,
     riichi-lib,
-    tasty,
-    tasty-hunit,
+    tasty >=1.5.4 && <1.6,
+    tasty-hunit >=0.10.2 && <0.11,
 
   default-language: GHC2021
