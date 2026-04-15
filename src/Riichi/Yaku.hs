@@ -1,3 +1,9 @@
+{- |
+Module      : Riichi.Yaku
+Description : Methods for detecting the various yaku conditions
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Yaku where
 
 import Data.Either (lefts, rights)

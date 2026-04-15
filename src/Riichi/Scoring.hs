@@ -1,6 +1,12 @@
+{- |
+Module      : Riichi.Scoring
+Description : Functions for score calculation (yaku, han, fu)
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Scoring where
 
-import Riichi.ColourStrings
+import ColourStrings
 import Control.Monad (when)
 import Control.Monad.Writer
 import Data.Function ((&))

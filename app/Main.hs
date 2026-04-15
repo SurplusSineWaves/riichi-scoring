@@ -1,9 +1,16 @@
+{- |
+Module      : Main
+Description : Contains entrypoint for CLI in main function.
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Main (main) where
 
 import Riichi.Display
 import Riichi.Meld
 import System.Environment (getArgs)
 
+-- | Entrypoint for CLI executable riichi.
 main :: IO ()
 main = do
     args <- getArgs

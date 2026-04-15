@@ -1,3 +1,9 @@
+{- |
+Module      : Riichi.Waits
+Description : Methods for determining the waits of a hand
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Waits where
 
 import Data.Function

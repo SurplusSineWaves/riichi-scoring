@@ -1,23 +1,30 @@
+{- |
+Module      : Riichi.Tile
+Description : Datatypes representing tiles and associated functions.
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Tile where
 
 import Data.Function
 import Data.List (intersperse)
 
+{- |
+Tile data type. Can be an honour tile or a numeric tile. Dora is tracked
+here too on a per tile basis (necessary for red fives)
+-}
 data Tile = Honour Honour Dora | Numeric Suit Value Dora deriving (Ord)
+
 type Dora = Integer
 type Value = Integer
 
+-- | An honour tile is a dragon or a wind
 data Honour = Dragon (Dragon) | Wind (Wind) deriving (Show, Eq, Ord)
+
 data Dragon = White | Green | Red deriving (Show, Eq, Ord)
 data Wind = North | East | South | West deriving (Show, Eq, Ord)
 
 data Suit = Man | Pin | Sou deriving (Show, Eq, Ord)
-
--- instance Show Value where
---     show (Value int) = show int
---
--- instance Ord Value where
---     compare (Value a) (Value b) = compare a b
 
 instance Read Tile where
     readsPrec :: Int -> ReadS Tile

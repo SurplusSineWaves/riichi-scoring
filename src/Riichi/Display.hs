@@ -1,9 +1,15 @@
+{- |
+Module      : Riichi.Display
+Description : Functions handling UI. Pending major revision.
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Display where
 
+import ColourStrings
 import Data.Function
 import Data.List (intersperse, sort)
 import Data.Monoid (getSum)
-import Riichi.ColourStrings
 import Riichi.Meld
 import Riichi.Scoring
 import Riichi.Tile

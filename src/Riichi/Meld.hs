@@ -1,3 +1,11 @@
+{- |
+Module      : Riichi.Meld
+Description : Datatypes representing melds and associated functions.
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+
+A meld is our catch all term for chis, pons and kans.
+-}
 module Riichi.Meld where
 
 import Data.Function

@@ -59,7 +59,7 @@ library
     Riichi.Yaku
 
   other-modules:
-    Riichi.ColourStrings
+    ColourStrings
 
   hs-source-dirs: src
   build-depends:
