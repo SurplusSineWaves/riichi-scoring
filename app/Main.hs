@@ -16,7 +16,7 @@ main = do
     args <- getArgs
     let list = ['1' .. '9'] ++ "NESWrgw"
     case args of
-        [] -> putStrLn "No arguments supplied"
+        [] -> putStrLn "No arguments supplied. Run riichi --help for more info."
         (arg : [])
             | (arg `elem` ["--help", "-h", "help"]) -> putStrLn helpString
             | (arg `elem` ["yaku", "waits", "score"]) -> putStrLn "Missing hand"
@@ -31,13 +31,17 @@ main = do
 helpString :: String
 helpString =
     "Command riichi:\n\tPossible subcommands: yaku, waits, score (default = yaku)\n\nUsage:\
-    \\n\tmahjong <subcommand> \"<hand>\"\
-    \\n\n\tWhere example hands include:\
-    \\n\t\t\"123p 234m 444p rrr NN\"\
+    \\n\triichi <subcommand> \"<hand>\"\
+    \\n\n\t\"yaku\" and \"score\" subcommands expect a full hand.\
+    \\n\t\"waits\" subcommand expects a hand that is tenpai.\
+    \\n\n\tExample hands include:\
+    \\n\t\t\"123p 234m 444p rrrr NN\"\
     \\n\t\t\"344556s 444p 222m EE\"\
     \\n\t\t\"19p 19s 19m 1p NESWrgw\"\
     \\n\n\tIn detail, numeric tiles are denoted (1-9) + (m, p, or s),\
     \\n\tWinds are denoted N, E, S, W, and Dragons are r, w, g.\
     \\n\tA 0 can be used to denote a red five.\
     \\n\tNumeric tiles of the same suit, and honour tiles, can be \
-    \\n\tgrouped as seen in the examples (but needn't be)."
+    \\n\tgrouped as seen in the examples (but needn't be).\
+    \\n\n\tIn scoring a hand, dora and seat/round wind must be supplied,\
+    \\n\talso in this format."
