@@ -80,50 +80,53 @@ displayHandScore hand = do
     putStrLn "Tsumo? [y/n]: "
     input <- getLine
     let tsumo = (input == "y")
-    sPairs <-
+
+    sevenPairs <-
         if chiitoitsu hand'
             then do
                 putStrLn "Seven pairs? [y/n]: "
                 input <- getLine
                 if input == "y"
-                    then do
-                        let (value, yaku_string) = getYaku hand' Nothing riichi ippatsu tsumo False seatWind roundWind True
-                        putStrLn $ case value of
-                            Left (han, _) ->
-                                yaku_string
-                                    ++ "\t\t"
-                                    ++ toGreen (show (getSum han))
-                                    ++ " Han total, closed by definition\n"
-                                    ++ "\n\t"
-                                    ++ toGreen (show (getScore han 25 True tsumo))
-                                    ++ " points for Dealer, "
-                                    ++ toGreen (show (getScore han 25 False tsumo))
-                                    ++ " points for Non-Dealer."
-                                    ++ ( if name /= ""
-                                            then
-                                                " ("
-                                                    ++ toMagenta name
-                                                    ++ ")."
-                                            else ""
-                                       )
-                              where
-                                name = hanToHandName han
-                            Right yakumans ->
-                                yaku_string
-                                    ++ "\t\t"
-                                    ++ toGreen (show (getSum yakumans))
-                                    ++ " Yakuman total\n"
-                                    ++ "\n\t"
-                                    ++ toGreen (show (getSum yakumans * 48000))
-                                    ++ " points for Dealer, "
-                                    ++ toGreen (show (getSum yakumans * 32000))
-                                    ++ " points for Non-Dealer."
+                    then
                         return True
                     else
                         return False
             else return False
-    if sPairs == False
+
+    if sevenPairs == True
         then do
+            let (value, yaku_string) = getYaku hand' Nothing riichi ippatsu tsumo False seatWind roundWind True
+            putStrLn $ case value of
+                Left (han, _) ->
+                    yaku_string
+                        ++ "\t\t"
+                        ++ toGreen (show (getSum han))
+                        ++ " Han total, closed by definition\n"
+                        ++ "\n\t"
+                        ++ toGreen (show (getScore han 25 True tsumo))
+                        ++ " points for Dealer, "
+                        ++ toGreen (show (getScore han 25 False tsumo))
+                        ++ " points for Non-Dealer."
+                        ++ ( if name /= ""
+                                then
+                                    " ("
+                                        ++ toMagenta name
+                                        ++ ")."
+                                else ""
+                           )
+                  where
+                    name = hanToHandName han
+                Right yakumans ->
+                    yaku_string
+                        ++ "\t\t"
+                        ++ toGreen (show (getSum yakumans))
+                        ++ " Yakuman total\n"
+                        ++ "\n\t"
+                        ++ toGreen (show (getSum yakumans * 48000))
+                        ++ " points for Dealer, "
+                        ++ toGreen (show (getSum yakumans * 32000))
+                        ++ " points for Non-Dealer."
+        else do
             let ihs = interpretHand hand'
             maybeIh <-
                 if thirteenOrphans hand'
@@ -230,4 +233,3 @@ displayHandScore hand = do
                         ++ " points for Dealer, "
                         ++ toGreen (show (getSum yakumans * 32000))
                         ++ " points for Non-Dealer."
-        else return ()
