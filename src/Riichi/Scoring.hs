@@ -33,7 +33,7 @@ getYaku hand (Just ih@(Pair _, melds)) riichi ippatsu tsumo ryanmanWait seatWind
             when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours\n")
             when (chinroutou hand) $ tell (1, toMagenta "\tYakuman: All Terminals\n")
             when (ryuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Green\n")
-            when (chuurenPoutou hand) $ tell (1, toMagenta "\tYakuman: Nine Gates\n")
+            when (chuurenPoutou hand && closedHand) $ tell (1, toMagenta "\tYakuman: Nine Gates\n")
             when (daisuushii ih) $ tell (2, toMagenta "\tDouble Yakuman: Big Winds\n")
         (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
 

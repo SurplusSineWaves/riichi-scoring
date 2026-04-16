@@ -18,3 +18,8 @@ Added some more documentation.
 
 ## 0.2.0.2
 Internal library now unnamed. Hoping this fixes Hackage build fail.
+
+## 0.2.0.3
+Added docs for yaku functions.
+Reworked seven pairs detection to ensure hand has 14 tiles.
+9 gates now checks that the hand is closed.
