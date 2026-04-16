@@ -20,7 +20,7 @@ bug-reports: https://github.com/SurplusSineWaves/riichi-scoring/issues
 -- PVP summary:     +-+------- breaking API changes
 --                  | | +----- non-breaking API additions
 --                  | | | +--- code changes with no API change
-version: 0.2.0.1
+version: 0.2.0.2
 -- A short (one-line) description of the package.
 synopsis: A CLI tool for interpreting and scoring Riichi Mahjong hands.
 -- A longer description of the package.
@@ -52,7 +52,7 @@ source-repository head
 common warnings
   ghc-options: -Wall
 
-library riichi-lib
+library
   exposed-modules:
     Riichi.Display
     Riichi.Meld
@@ -86,7 +86,7 @@ executable riichi
     base >=4.19.2.0 && <5,
     containers >=0.6.8 && <0.8,
     mtl >=2.2.2 && <2.4,
-    riichi-lib,
+    riichi-scoring,
 
   -- Directories containing source files.
   hs-source-dirs: app
@@ -99,7 +99,7 @@ test-suite riichi-scoring-test
   main-is: Test.hs
   build-depends:
     base >=4.19.2.0 && <5,
-    riichi-lib,
+    riichi-scoring,
     tasty >=1.5.4 && <1.6,
     tasty-hunit >=0.10.2 && <0.11,
 
