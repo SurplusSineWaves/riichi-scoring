@@ -15,3 +15,6 @@ Help messages improved. Module structure refactored. Documentation begun.
 Revised cabal version in attempt to fix build error on Hackage. Build works
 locally, suspect the problem is a quirk of Hackage build system.
 Added some more documentation.
+
+## 0.2.0.2
+Internal library now unnamed. Hoping this fixes Hackage build fail.
