@@ -16,6 +16,7 @@ import Riichi.Tile
 import Riichi.Waits
 import Riichi.Yaku
 
+-- | Implements the "yaku" command for the CLI. In need of a refactor.
 displayHandYaku :: Hand -> IO ()
 displayHandYaku hand = do
     if length hand < 14
@@ -54,11 +55,13 @@ displayHandYaku hand = do
                         then putStrLn $ toRed "This hand is not valid"
                         else return ()
 
+-- | Implements the "waits" command for the CLI.
 displayHandWaits :: Hand -> IO ()
 displayHandWaits hand = do
     let waits = getWaits hand
     putStrLn $ "Waits are: " ++ (waits & map show & intersperse ", " & concat)
 
+-- | Implements the "score" command for the CLI. In need of a refactor, logic is rather serpentine at the moment.
 displayHandScore :: Hand -> IO ()
 displayHandScore hand = do
     putStrLn "Input dora: (or leave blank)"

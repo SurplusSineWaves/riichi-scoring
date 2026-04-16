@@ -15,17 +15,28 @@ here too on a per tile basis (necessary for red fives)
 -}
 data Tile = Honour Honour Dora | Numeric Suit Value Dora deriving (Ord)
 
+-- | Simple type alias. Tracks dora value for a tile. Note red five is represented as dora 1.
 type Dora = Integer
+
+-- | Type alias for the value of a Numeric tile.
 type Value = Integer
 
 -- | An honour tile is a dragon or a wind
 data Honour = Dragon (Dragon) | Wind (Wind) deriving (Show, Eq, Ord)
 
+-- | Dragon enum
 data Dragon = White | Green | Red deriving (Show, Eq, Ord)
+
+-- | Wind enum
 data Wind = North | East | South | West deriving (Show, Eq, Ord)
 
+-- | Suit enum
 data Suit = Man | Pin | Sou deriving (Show, Eq, Ord)
 
+{- | Read a single tile using (semi)standard notation.
+| Winds are upper case, dragons lower case, to remove ambiguity.
+| Red five is denoted by 0.
+-}
 instance Read Tile where
     readsPrec :: Int -> ReadS Tile
     readsPrec _ (x : []) = [(tile, [])]
@@ -58,6 +69,7 @@ instance Read Tile where
                 )
          in [(Numeric suit value dora, [])]
 
+-- | ALlows strings like "123p" and "rrNE" to be read
 readTileBlock :: String -> [Tile]
 readTileBlock string =
     let
@@ -70,6 +82,7 @@ readTileBlock string =
      in
         stripped & map (\c -> [c]) & intersperse separator & concat & (++ separator) & words & map read
 
+-- | Implements an inverse to read
 instance Show Tile where
     show (Honour (Dragon Red) _) = "r"
     show (Honour (Dragon Green) _) = "g"
@@ -85,7 +98,9 @@ instance Show Tile where
     show (Numeric Man n _) = (show n) ++ "m"
     show (Numeric Sou n _) = (show n) ++ "s"
 
--- We don't care about dora when equating tiles
+{- | Almost identical to what would result from deriving Eq on Tile, except we choose to
+| ignore the Dora value
+-}
 instance Eq Tile where
     (==) (Honour honour _) (Honour honour' _) = (honour == honour')
     (==) (Numeric suit value _) (Numeric suit' value' _) = (suit == suit') && (value == value')
