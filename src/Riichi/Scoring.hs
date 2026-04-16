@@ -111,7 +111,6 @@ getYaku hand Nothing riichi ippatsu tsumo _ _ _ _ =
             when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours (+ seven pairs)\n")
         (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
 
-        sevenPairs = allPairs hand
         hanWriter :: Writer (Han, String) () = do
             when (riichi) $ tell (1, toCyan "\t1 Han: Riichi\n")
             when (ippatsu) $ tell (1, toCyan "\t1 Han: Ippatsu\n")
@@ -137,7 +136,7 @@ getYaku hand Nothing riichi ippatsu tsumo _ _ _ _ =
         if yakumans > 0
             then (Right yakumans, yakumanOutput)
             else
-                if sevenPairs
+                if chiitoitsu hand
                     then
                         (Left (han + 2, 0), toCyan "\t2 Han: Seven pairs\n" ++ output)
                     else

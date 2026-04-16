@@ -39,6 +39,7 @@ newtype Pair = Pair Tile deriving (Show)
 data Meld = Chi Tile Tile Tile Open | Pon Tile Open | Kan Tile Open deriving (Ord)
 type Open = Bool
 
+-- | Almost identical to what deriving Eq would generate, except we consider open and closed melds that are otherwise equal to be the same.
 instance Eq Meld where
     (==) (Pon tile1 _) (Pon tile2 _) = tile1 == tile2
     (==) (Kan tile1 _) (Kan tile2 _) = tile1 == tile2
@@ -170,6 +171,7 @@ concatMelds (Pon tile _ : rest) = [tile, tile, tile] ++ concatMelds rest
 concatMelds (Kan tile _ : rest) = [tile, tile, tile, tile] ++ concatMelds rest
 concatMelds (Chi tile1 tile2 tile3 _ : rest) = [tile1, tile2, tile3] ++ concatMelds rest
 
+-- | Find the unique pairs in a hand. Returns a list of pairs, each along with the remaining tiles in the hand not in the pair.
 findPairs :: Hand -> [(Pair, Hand)]
 findPairs hand =
     hand

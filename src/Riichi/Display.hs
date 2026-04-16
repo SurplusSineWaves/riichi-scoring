@@ -40,7 +40,7 @@ displayHandYaku hand = do
                             Left (hanClosed, hanOpen) -> hand_string ++ "\n" ++ yaku_string ++ "\t\t" ++ toGreen (show (getSum hanClosed)) ++ " Han total if closed, " ++ toGreen (show (getSum hanOpen)) ++ " if open\n"
                             Right yakumans -> hand_string ++ "\n" ++ yaku_string ++ "\t\t" ++ toGreen (show (getSum yakumans)) ++ " Yakuman total\n"
                 else return ()
-            if allPairs hand || thirteenOrphans hand
+            if chiitoitsu hand || thirteenOrphans hand
                 then do
                     if num == 0
                         then putStrLn "This hand can be interpreted as:\n"
@@ -80,8 +80,8 @@ displayHandScore hand = do
     putStrLn "Tsumo? [y/n]: "
     input <- getLine
     let tsumo = (input == "y")
-    sevenPairs <-
-        if (allPairs hand') && (length hand' == 14)
+    sPairs <-
+        if chiitoitsu hand'
             then do
                 putStrLn "Seven pairs? [y/n]: "
                 input <- getLine
@@ -122,7 +122,7 @@ displayHandScore hand = do
                     else
                         return False
             else return False
-    if sevenPairs == False
+    if sPairs == False
         then do
             let ihs = interpretHand hand'
             maybeIh <-
