@@ -54,6 +54,7 @@ common warnings
 
 library
   exposed-modules:
+    Riichi.Context
     Riichi.Display
     Riichi.Meld
     Riichi.Scoring

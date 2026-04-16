@@ -68,3 +68,6 @@ display file really ought to be part of the CLI but not the Library.
 Major refactors are needed. As of now we just have a working prototype.
 
 Also need to add Haddock doc strings
+
+Potentially a good idea to replace some data objects with records, e.g Tile and
+Meld.
