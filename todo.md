@@ -72,4 +72,3 @@ Also need to add Haddock doc strings
 Potentially a good idea to replace some data objects with records, e.g Tile and
 Meld.
 
-Might need to rename isClosed in one location. It occurs in two.

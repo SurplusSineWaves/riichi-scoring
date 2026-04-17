@@ -136,6 +136,7 @@ data YakuContext = YakuContext
     , isJunchan :: Bool
     , isChanta :: Bool
     , isHonroutou :: Bool
+    , yakuHandContext :: HandContext
     -- , isThirteenOrphans :: Bool
     -- , isChiitoitsu :: Bool
     }
@@ -175,6 +176,7 @@ mkYakuContext hand (Just ih) handContext =
             , isJunchan = fullyOutside
             , isChanta = halfOutside && (not fullyOutside) && (not terminalsHonours)
             , isHonroutou = terminalsHonours && (not fullyOutside)
+            , yakuHandContext = handContext
             }
 -- Seven pairs case
 mkYakuContext hand Nothing handContext =
@@ -205,6 +207,7 @@ mkYakuContext hand Nothing handContext =
             , isJunchan = False
             , isChanta = False
             , isHonroutou = terminalsHonours
+            , yakuHandContext = handContext
             }
 data YakumanContext = YakumanContext
     { isSuuankou :: Bool

@@ -283,11 +283,11 @@ chuurenPoutou hand = (chinitsu hand) && (length list == 9) && (head list >= 3) &
 
 -- | Check for three concealed triplets. Note that a closed hand may have a triplet that is not concealed, if won by ron.
 sanankou :: InterpretedHand -> Bool
-sanankou (_, melds) = (melds & filter (not . meldIsChi) & filter (isClosed) & length) == 3
+sanankou (_, melds) = (melds & filter (not . meldIsChi) & filter (meldIsClosed) & length) == 3
 
 -- | Check for four concealed triplets. Yakuman.
 suuankou :: InterpretedHand -> Bool
-suuankou (_, melds) = (melds & filter (not . meldIsChi) & filter (isClosed) & length) == 4
+suuankou (_, melds) = (melds & filter (not . meldIsChi) & filter (meldIsClosed) & length) == 4
 
 -- | Check for pinfu. Takes the hand, the seat wind, round wind, whether the wait was ryanman, and whether it is closed (in that order).
 pinfu :: InterpretedHand -> Wind -> Wind -> Bool -> Bool -> Bool

@@ -12,6 +12,7 @@ import Control.Monad.Writer
 import Data.Function ((&))
 import Data.Map qualified as M
 import Data.Monoid (Sum)
+import Riichi.Context
 import Riichi.Meld
 import Riichi.Tile
 import Riichi.Yaku
@@ -40,7 +41,7 @@ getYaku hand (Just ih@(Pair _, melds)) riichi ippatsu tsumo ryanmanWait seatWind
         hanWriter :: Writer (Han, Han, String) () = do
             when (riichi) $ tell (1, 0, toCyan "\t1 Han: Riichi\n")
             when (ippatsu) $ tell (1, 0, toCyan "\t1 Han: Ippatsu\n")
-            when (tsumo && and (map isClosed melds)) $ tell (1, 0, toCyan "\t1 Han: Fully concealed hand\n")
+            when (tsumo && and (map meldIsClosed melds)) $ tell (1, 0, toCyan "\t1 Han: Fully concealed hand\n")
             when (pinfu ih seatWind roundWind ryanmanWait closedHand) $ tell (1, 0, toCyan "\t1 Han: Pinfu\n")
             when (tanyao hand) $ tell (1, 1, toCyan "\t1 Han: All simples\n")
             when (haku ih) $ tell (1, 1, toCyan "\t1 Han: Haku (White Dragon)\n")
@@ -202,6 +203,37 @@ getScore han fu dealer tsumo =
                         else case M.lookup (han, fu) scoreTableRonNonDealer of
                             Just score -> score
                             Nothing -> 0
+
+formYakuString :: YakuContext -> String
+formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = Just riichiContext, dora}} =
+    let hanWriter :: Writer String () = do
+            when (isRiichi riichiContext) $ tell $ toCyan "\t1 Han: Riichi\n"
+            when (isIppatsu riichiContext) $ tell $ toCyan "\t1 Han: Ippatsu\n"
+            when ((isTsumo handContext, isClosed handContext) == (Just True, Just True)) $ tell $ toCyan "\t1 Han: Fully concealed hand\n"
+            when (isPinfu yakuContext) $ tell $ toCyan "\t1 Han: Pinfu\n"
+            when (isTanyao yakuContext) $ tell $ toCyan "\t1 Han: All simples\n"
+            when (isHaku yakuContext) $ tell $ toCyan "\t1 Han: Haku (White Dragon)\n"
+            when (isHatsu yakuContext) $ tell $ toCyan "\t1 Han: Hatsu (Green Dragon)\n"
+            when (isChun yakuContext) $ tell $ toCyan "\t1 Han: Chun (Red Dragon)\n"
+            when (isSeatWind yakuContext) $ tell $ toCyan "\t1 Han: Seat wind\n"
+            when (isRoundWind yakuContext) $ tell $ toCyan "\t1 Han: Round wind\n"
+            when (isSanshokuDoujun yakuContext) $ tell $ toCyan "\t2 Han: Mixed triple sequence (-1 Han if open)\n"
+            when (isSanshokuDoukou yakuContext) $ tell $ toCyan "\t2 Han: Triple triplets (-1 Han if open)\n"
+            when (isSanankou yakuContext) $ tell $ toCyan "\t2 Han: Three concealed triplets\n"
+            when (isChinitsu yakuContext) $ tell $ toCyan "\t6 Han: Full flush (-1 Han if open)\n"
+            when (isHonitsu yakuContext) $ tell $ toCyan "\t3 Han: Half flush (-1 Han if open)\n"
+            when (isToitoi yakuContext) $ tell $ toCyan "\t2 Han: All triplets\n"
+            when (isIttsuu yakuContext) $ tell $ toCyan "\t2 Han: Pure straight (-1 Han if open)\n"
+            when (isSankantsu yakuContext) $ tell $ toCyan "\t2 Han: Three kans\n"
+            when (isShousangen yakuContext) $ tell $ toCyan "\t2 Han: Little three dragons\n"
+            when (isRyanpeikou yakuContext) $ tell $ toCyan "\t3 Han: Twice pure double sequence (Closed only)\n"
+            when (isIipeikou yakuContext) $ tell $ toCyan "\t1 Han: Pure double sequence (Closed only)\n"
+            when (isJunchan yakuContext) $ tell $ toCyan "\t3 Han: Fully outside hand (-1 Han if open)\n"
+            when (isHonroutou yakuContext) $ tell $ toCyan "\t2 Han: All terminals and honours\n"
+            when (isChanta yakuContext) $ tell $ toCyan "\t2 Han: Half outside hand (-1 Han if open)\n"
+            when (dora > 0) $ tell $ toCyan ("\t" ++ show dora ++ " Han: Dora\n")
+        (_, string) = runWriter hanWriter
+     in string
 
 scoreTableTsumoDealer :: M.Map (Han, Fu) Integer
 scoreTableTsumoDealer =

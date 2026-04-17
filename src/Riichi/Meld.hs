@@ -86,8 +86,8 @@ isOpen (Chi _ _ _ x) = x
 isOpen (Pon _ x) = x
 isOpen (Kan _ x) = x
 
-isClosed :: Meld -> Bool
-isClosed = not . isOpen
+meldIsClosed :: Meld -> Bool
+meldIsClosed = not . isOpen
 
 openMeld :: Meld -> Meld
 openMeld (Chi a b c _) = Chi a b c True
