@@ -147,18 +147,18 @@ displayHandScore hand = do
 
                         melds' <- case (riichi, tsumo) of
                             (True, True) -> return melds
-                            (True, False) -> do
-                                putStrLn "Which meld was opened by Ron? (enter an index): "
-                                sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
-                                input <- getLine
-                                let index :: Int = input & read
-                                return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld)
-                            (False, _) -> do
-                                putStrLn "Which melds are open? (enter a string of indices, or leave blank if all closed): "
-                                sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
-                                input <- getLine
-                                let indices :: [Int] = input & map return & (map read)
-                                return $ (zip [0 ..] melds) & map (\(i, meld) -> if i `elem` indices then openMeld meld else meld)
+                            (True, False) -> getRonMeld melds
+                            -- putStrLn "Which meld was opened by Ron? (enter an index): "
+                            -- sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
+                            -- input <- getLine
+                            -- let index :: Int = input & read
+                            -- return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld
+                            (False, _) -> getOpenMelds melds
+                        -- putStrLn "Which melds are open? (enter a string of indices, or leave blank if all closed): "
+                        -- sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
+                        -- input <- getLine
+                        -- let indices :: [Int] = input & map return & (map read)
+                        -- return $ (zip [0 ..] melds) & map (\(i, meld) -> if i `elem` indices then openMeld meld else meld)
                         return $ Just (pair, melds')
 
             putStrLn "Did the hand have an open wait? [y/n]: "

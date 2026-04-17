@@ -225,3 +225,19 @@ interpretHand hand =
 
 showInterpretedHand :: InterpretedHand -> String
 showInterpretedHand (pair, melds) = (show pair) : (map show melds) & intersperse ", " & concat
+
+getRonMeld :: [Meld] -> IO [Meld]
+getRonMeld melds = do
+    putStrLn "Which meld was opened by Ron? (enter an index): "
+    sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
+    input <- getLine
+    let index :: Int = input & read
+    return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld)
+
+getOpenMelds :: [Meld] -> IO [Meld]
+getOpenMelds melds = do
+    putStrLn "Which melds are open? (enter a string of indices, or leave blank if all closed): "
+    sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
+    input <- getLine
+    let indices :: [Int] = input & map return & (map read)
+    return $ (zip [0 ..] melds) & map (\(i, meld) -> if i `elem` indices then openMeld meld else meld)
