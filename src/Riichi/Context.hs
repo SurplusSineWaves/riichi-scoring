@@ -136,6 +136,7 @@ data YakuContext = YakuContext
     , isJunchan :: Bool
     , isChanta :: Bool
     , isHonroutou :: Bool
+    , isMenzenTsumo :: Bool
     , yakuHandContext :: HandContext
     -- , isThirteenOrphans :: Bool
     -- , isChiitoitsu :: Bool
@@ -148,6 +149,7 @@ mkYakuContext hand (Just ih) handContext =
             { wind = Just WindContext{seatWind = sw, roundWind = rw}
             , wait = Just WaitContext{isRyanmanWait = isRyanman}
             , isClosed = Just closure
+            , isTsumo = Just tsumo
             } = handContext
         (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
         (twicePure, singlePure) = (ryanpeikou ih, iipeikou ih)
@@ -171,12 +173,13 @@ mkYakuContext hand (Just ih) handContext =
             , isChinitsu = fullFlush
             , isHonitsu = halfFlush && (not fullFlush)
             , -- Should these check for closed, or do we want to include them anyway?
-              isRyanpeikou = twicePure
-            , isIipeikou = singlePure && (not twicePure)
+              isRyanpeikou = twicePure && closure
+            , isIipeikou = singlePure && (not twicePure) && closure
             , isJunchan = fullyOutside
             , isChanta = halfOutside && (not fullyOutside) && (not terminalsHonours)
             , isHonroutou = terminalsHonours && (not fullyOutside)
             , yakuHandContext = handContext
+            , isMenzenTsumo = tsumo && closure
             }
 -- Seven pairs case
 mkYakuContext hand Nothing handContext =

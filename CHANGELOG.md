@@ -23,3 +23,6 @@ Internal library now unnamed. Hoping this fixes Hackage build fail.
 Added docs for yaku functions.
 Reworked seven pairs detection to ensure hand has 14 tiles.
 9 gates now checks that the hand is closed.
+
+## 0.3.0.0
+Fixed error in scoring triple triplets, was previously scored as 1 han open.
