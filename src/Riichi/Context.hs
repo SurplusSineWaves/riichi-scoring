@@ -1,7 +1,7 @@
 module Riichi.Context where
 
 import Data.Function ((&))
-import Riichi.Meld (Hand, InterpretedHand, Pair (Pair), getDora, isOpen, mkHand)
+import Riichi.Meld
 import Riichi.Tile
 import Riichi.Yaku
 
@@ -15,28 +15,28 @@ askYesNo string = do
 we may not need in order to fully understand the hand.
 -}
 data HandContext = HandContext
-    { isClosed :: Maybe Bool
-    , isTsumo :: Maybe Bool
-    , riichi :: Maybe RiichiContext
-    , wait :: Maybe WaitContext
-    , wind :: Maybe WindContext
+    { isClosed :: Bool
+    , isTsumo :: Bool
+    , riichi :: RiichiContext
+    , wait :: WaitContext
+    , wind :: WindContext
     , isSevenPairs :: Bool
     , isThirteenOrphans :: Bool
     , dora :: Integer
     }
 
-getMinimalHandContext :: Hand -> Maybe InterpretedHand -> HandContext
-getMinimalHandContext hand Nothing =
+getMinimalHandContext :: Hand -> Bool -> HandContext
+getMinimalHandContext hand sp =
     let
-        sevenPairs = chiitoitsu hand
+        sevenPairs = sp
         orphans = thirteenOrphans hand
      in
         HandContext
-            { isClosed = Nothing
-            , isTsumo = Nothing
-            , riichi = Nothing
-            , wait = Nothing
-            , wind = Nothing
+            { isClosed = False
+            , isTsumo = False
+            , riichi = RiichiContext{isRiichi = False, isIppatsu = False}
+            , wait = WaitContext{isRyanmanWait = False, isShanponWait = False}
+            , wind = WindContext{seatWind = East, roundWind = East}
             , isSevenPairs = sevenPairs
             , isThirteenOrphans = orphans
             , dora = hand & map getDora & sum
@@ -45,28 +45,32 @@ getMinimalHandContext hand Nothing =
 addRiichiContext :: HandContext -> IO HandContext
 addRiichiContext handContext = do
     riichiContext <- askRiichiContext
-    return handContext{riichi = Just riichiContext}
+    return handContext{riichi = riichiContext}
 
 addWaitContext :: HandContext -> IO HandContext
 addWaitContext handContext = do
     waitContext <- askWaitContext
-    return handContext{wait = Just waitContext}
+    return handContext{wait = waitContext}
 
 addWindContext :: HandContext -> IO HandContext
 addWindContext handContext = do
     windContext <- askWindContext
-    return handContext{wind = Just windContext}
+    return handContext{wind = windContext}
 
 addTsumoContext :: HandContext -> IO HandContext
 addTsumoContext handContext = do
     tsumo <- askYesNo "Tsumo? [y/n]:"
-    return handContext{isClosed = Just tsumo}
+    return handContext{isClosed = tsumo}
 
 -- The context must already know riichi and tsumo values for this to work
-addClosedContext :: Hand -> Maybe InterpretedHand -> HandContext -> IO HandContext
-addClosedContext hand (Just (_, melds)) handContext = do
-    let HandContext{isTsumo = Just t, riichi = Just RiichiContext{isRiichi = r}} = handContext
-    let numOpen = melds & filter isOpen & length
+addClosedContext :: Maybe InterpretedHand -> HandContext -> IO (Maybe InterpretedHand, HandContext)
+addClosedContext (Just (tile, melds)) handContext = do
+    let HandContext{isTsumo = t, riichi = RiichiContext{isRiichi = r}} = handContext
+    melds' <- case (r, t) of
+        (True, True) -> return melds
+        (True, False) -> getRonMeld melds
+        (False, _) -> getOpenMelds melds
+    let numOpen = melds' & filter isOpen & length
     closedHand <- case numOpen of
         0 -> return True
         _
@@ -75,8 +79,8 @@ addClosedContext hand (Just (_, melds)) handContext = do
                 (True, _) -> return True
                 (False, True) -> return False -- Already know there is an open meld. Now we know it wasn't opened by Ron.
                 (False, False) -> askYesNo "Damaten? [y/n]:"
-    return handContext{isClosed = Just closedHand}
-addClosedContext _ Nothing handContext = return handContext{isClosed = Just True}
+    return (Just (tile, melds'), handContext{isClosed = closedHand})
+addClosedContext Nothing handContext = return (Nothing, handContext{isClosed = True})
 
 data WaitContext = WaitContext
     { isRyanmanWait :: Bool
@@ -138,18 +142,18 @@ data YakuContext = YakuContext
     , isHonroutou :: Bool
     , isMenzenTsumo :: Bool
     , yakuHandContext :: HandContext
-    -- , isThirteenOrphans :: Bool
-    -- , isChiitoitsu :: Bool
+    , -- , isThirteenOrphans :: Bool
+      isChiitoitsu :: Bool
     }
 
 mkYakuContext :: Hand -> Maybe InterpretedHand -> HandContext -> YakuContext
 mkYakuContext hand (Just ih) handContext =
     let
         HandContext
-            { wind = Just WindContext{seatWind = sw, roundWind = rw}
-            , wait = Just WaitContext{isRyanmanWait = isRyanman}
-            , isClosed = Just closure
-            , isTsumo = Just tsumo
+            { wind = WindContext{seatWind = sw, roundWind = rw}
+            , wait = WaitContext{isRyanmanWait = isRyanman}
+            , isClosed = closure
+            , isTsumo = tsumo
             } = handContext
         (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
         (twicePure, singlePure) = (ryanpeikou ih, iipeikou ih)
@@ -180,9 +184,10 @@ mkYakuContext hand (Just ih) handContext =
             , isHonroutou = terminalsHonours && (not fullyOutside)
             , yakuHandContext = handContext
             , isMenzenTsumo = tsumo && closure
+            , isChiitoitsu = False
             }
 -- Seven pairs case
-mkYakuContext hand Nothing handContext =
+mkYakuContext hand Nothing handContext@HandContext{isTsumo = tsumo} =
     let
         (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
         terminalsHonours = honroutou hand
@@ -211,7 +216,10 @@ mkYakuContext hand Nothing handContext =
             , isChanta = False
             , isHonroutou = terminalsHonours
             , yakuHandContext = handContext
+            , isMenzenTsumo = tsumo
+            , isChiitoitsu = chiitoitsu hand
             }
+
 data YakumanContext = YakumanContext
     { isSuuankou :: Bool
     , isSuukantsu :: Bool
@@ -224,19 +232,92 @@ data YakumanContext = YakumanContext
     , isDaisuushii :: Bool
     }
 
-mkYakumanContext :: Hand -> Maybe InterpretedHand -> YakumanContext
+mkYakumanContext :: Hand -> Maybe InterpretedHand -> Maybe YakumanContext
 mkYakumanContext hand (Just ih) =
-    YakumanContext
-        { isSuuankou = suuankou ih
-        , isSuukantsu = suukantsu ih
-        , isDaisangen = daisangen ih
-        , isShousuushii = shousuushii ih
-        , isTsuuiisou = tsuuiisou hand
-        , isChinroutou = chinroutou hand
-        , isRyuuiisou = ryuuiisou hand
-        , isChuurenPoutou = chuurenPoutou hand
-        , isDaisuushii = daisuushii ih
-        }
-mkYakumanContext hand Nothing = undefined
+    let
+        isSuuaa = suuankou ih
+        isSuuka = suukantsu ih
+        isDaisa = daisangen ih
+        isShous = shousuushii ih
+        isTsuui = tsuuiisou hand
+        isChinr = chinroutou hand
+        isRyuui = ryuuiisou hand
+        isChuur = chuurenPoutou hand
+        isDaisu = daisuushii ih
+     in
+        if or [isSuuaa, isSuuka, isDaisa, isShous, isTsuui, isChinr, isRyuui, isChuur, isDaisu]
+            then
+                Just
+                    YakumanContext
+                        { isSuuankou = isSuuaa
+                        , isSuukantsu = isSuuka
+                        , isDaisangen = isDaisa
+                        , isShousuushii = isShous
+                        , isTsuuiisou = isTsuui
+                        , isChinroutou = isChinr
+                        , isRyuuiisou = isRyuui
+                        , isChuurenPoutou = isChuur
+                        , isDaisuushii = isDaisu
+                        }
+            else
+                Nothing
+mkYakumanContext hand Nothing =
+    let
+        isTsuui = tsuuiisou hand
+        isChinr = chinroutou hand
+        isRyuui = ryuuiisou hand
+        isChuur = chuurenPoutou hand
+     in
+        if or [isTsuui, isChinr, isRyuui, isChuur]
+            then
+                Just
+                    YakumanContext
+                        { isSuuankou = False
+                        , isSuukantsu = False
+                        , isDaisangen = False
+                        , isShousuushii = False
+                        , isTsuuiisou = isTsuui
+                        , isChinroutou = isChinr
+                        , isRyuuiisou = isRyuui
+                        , isChuurenPoutou = isChuur
+                        , isDaisuushii = False
+                        }
+            else
+                Nothing
+data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
 
-data Context = Context HandContext (Either YakuContext YakumanContext)
+mkContext :: Hand -> IO Context
+mkContext hand = do
+    sevenPairs <-
+        if chiitoitsu hand
+            then askYesNo "Seven pairs? [y/n]: "
+            else return False
+    let handContext = getMinimalHandContext hand sevenPairs
+    maybeIh <-
+        if sevenPairs
+            then
+                return Nothing
+            else do
+                let ihs = interpretHand hand
+                ih <-
+                    if length ihs > 1
+                        then do
+                            putStrLn "Select hand interpretation: "
+                            sequence_ $ [("[" ++ show n ++ "]: " ++ (ih & showInterpretedHand)) & putStrLn | (n :: Integer, ih) <- zip [0 ..] ihs]
+                            n <- read <$> getLine :: IO Int
+                            return (ihs !! n)
+                        else do
+                            putStrLn "Found one way to interpret this hand: "
+                            let ih = head ihs
+                            putStrLn (showInterpretedHand ih)
+                            return ih
+                return $ Just ih
+    let maybeYakumanContext = mkYakumanContext hand maybeIh
+    case maybeYakumanContext of
+        Nothing -> do
+            handContext' <- pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
+            (maybeIh', handContext'') <- addClosedContext maybeIh handContext'
+            let yakuContext = mkYakuContext hand maybeIh' handContext''
+            return $ Context maybeIh' handContext'' (Left yakuContext)
+        Just yakumanContext -> do
+            return $ Context maybeIh handContext (Right yakumanContext)

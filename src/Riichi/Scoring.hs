@@ -205,11 +205,12 @@ getScore han fu dealer tsumo =
                             Nothing -> 0
 
 formYakuString :: YakuContext -> String
-formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = Just riichiContext, dora}} =
+formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = riichiContext, dora}} =
     let hanWriter :: Writer String () = do
             when (isRiichi riichiContext) $ tell $ toCyan "\t1 Han: Riichi\n"
             when (isIppatsu riichiContext) $ tell $ toCyan "\t1 Han: Ippatsu\n"
             when (isMenzenTsumo yakuContext) $ tell $ toCyan "\t1 Han: Fully concealed hand\n"
+            when (isChiitoitsu yakuContext) $ tell $ toCyan "\t2 Han: Seven pairs"
             when (isPinfu yakuContext) $ tell $ toCyan "\t1 Han: Pinfu\n"
             when (isTanyao yakuContext) $ tell $ toCyan "\t1 Han: All simples\n"
             when (isHaku yakuContext) $ tell $ toCyan "\t1 Han: Haku (White Dragon)\n"
@@ -236,13 +237,14 @@ formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext
      in string
 
 getYakuHan :: YakuContext -> Han
-getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = Just riichiContext, dora}} =
+getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = riichiContext, dora}} =
     let
-        closedBonus = if (isClosed handContext == Just True) then 1 else 0
+        closedBonus = if (isClosed handContext == True) then 1 else 0
         hanWriter :: Writer Han () = do
             when (isRiichi riichiContext) $ tell $ 1
             when (isIppatsu riichiContext) $ tell $ 1
             when (isMenzenTsumo yakuContext) $ tell $ 1
+            when (isChiitoitsu yakuContext) $ tell $ 2
             when (isPinfu yakuContext) $ tell $ 1
             when (isTanyao yakuContext) $ tell $ 1
             when (isHaku yakuContext) $ tell $ 1
@@ -259,7 +261,7 @@ getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{rii
             when (isIttsuu yakuContext) $ tell $ 1 + closedBonus
             when (isSankantsu yakuContext) $ tell $ 2
             when (isShousangen yakuContext) $ tell $ 2
-            when (isRyanpeikou yakuContext) $ tell $ 0 + 3 * closedBonus
+            when (isRyanpeikou yakuContext) $ tell $ 3 * closedBonus
             when (isIipeikou yakuContext) $ tell $ closedBonus
             when (isJunchan yakuContext) $ tell $ 2 + closedBonus
             when (isHonroutou yakuContext) $ tell $ 2
@@ -268,6 +270,45 @@ getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{rii
         (_, han) = runWriter hanWriter
      in
         han
+
+formYakumanString :: YakumanContext -> String
+formYakumanString _ = ""
+
+getYakumanCount :: YakumanContext -> Int
+getYakumanCount _ = 0
+
+formContextString :: Context -> String
+formContextString (Context _ _ (Left yakuContext)) = formYakuString yakuContext
+formContextString (Context _ _ (Right yakumanContext)) = formYakumanString yakumanContext
+
+getContextHanOrYakumans :: Context -> Either Han Int
+getContextHanOrYakumans (Context _ _ (Left yakuContext)) = Left $ getYakuHan yakuContext
+getContextHanOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakumanCount yakumanContext
+
+_getFu :: InterpretedHand -> HandContext -> Fu
+_getFu (Pair tile, melds) c =
+    let
+        sw = seatWind $ wind c
+        rw = roundWind $ wind c
+        goodWait = (isRyanmanWait $ wait c) || (isShanponWait $ wait c)
+        tsumo = isTsumo c
+        closure = isClosed c
+        meldsFu = melds & map getMeldFu & sum
+        waitFu = if goodWait then 2 else 0
+        yakuhaiFu =
+            (if (tile & isDragon) then 2 else 0)
+                + (if (tile == (Honour (Wind rw) 0)) then 2 else 0)
+                + (if (tile == (Honour (Wind sw) 0)) then 2 else 0)
+        ronClosedFu = if (not tsumo) && closure then 10 else 0
+        tsumoFu = if tsumo then 2 else 0
+     in
+        roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)
+  where
+    roundUp n = last ([120, 110 .. 10] & filter (>= n))
+
+-- Partial function!
+getContextFu :: Context -> Fu
+getContextFu (Context (Just ih) handContext _) = _getFu ih handContext
 
 scoreTableTsumoDealer :: M.Map (Han, Fu) Integer
 scoreTableTsumoDealer =
