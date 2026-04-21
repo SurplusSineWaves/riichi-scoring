@@ -65,7 +65,7 @@ addWindContext handContext = do
 addTsumoContext :: HandContext -> IO HandContext
 addTsumoContext handContext = do
     tsumo <- askYesNo "Tsumo? [y/n]:"
-    return handContext{isClosed = tsumo}
+    return handContext{isTsumo = tsumo}
 
 -- The context must already know riichi and tsumo values for this to work
 addClosedContext :: Maybe InterpretedHand -> HandContext -> IO (Maybe InterpretedHand, HandContext)
