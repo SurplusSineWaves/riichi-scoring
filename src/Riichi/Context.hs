@@ -352,7 +352,10 @@ mkContext hand = do
     maybeYakumanContext <- mkYakumanContext hand maybeIh Nothing
     case maybeYakumanContext of
         Nothing -> do
-            handContext' <- pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
+            handContext' <-
+                if not sevenPairs
+                    then pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
+                    else pure handContext >>= addRiichiContext >>= addTsumoContext
             (maybeIh', handContext'') <- addClosedContext maybeIh handContext'
             let yakuContext = mkYakuContext hand maybeIh' handContext''
             return $ Context maybeIh' handContext'' (Left yakuContext)
