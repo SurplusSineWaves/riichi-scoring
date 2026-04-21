@@ -50,3 +50,4 @@ Also need to add Haddock doc strings
 Potentially a good idea to replace some data objects with records, e.g Tile and
 Meld.
 
+Postpone dora addition to after we're sure the hand isn't a (non-counted) yakuman

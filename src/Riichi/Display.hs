@@ -92,58 +92,61 @@ displayHandWaits hand = do
 -- | Implements the "score" command for the CLI. In need of a refactor, logic is rather serpentine at the moment.
 displayHandScore :: Hand -> IO ()
 displayHandScore hand = do
-    putStrLn "Input dora (or leave blank):"
-    dora <- mkHand <$> getLine
-    if dora /= []
-        then
-            putStrLn ""
-        else return ()
+    if length hand < 14
+        then putStrLn "Hand is the wrong size"
+        else do
+            putStrLn "Input dora (or leave blank):"
+            dora <- mkHand <$> getLine
+            if dora /= []
+                then
+                    putStrLn ""
+                else return ()
 
-    let hand' = addDora dora hand
-    context@(Context _ handContext _) <- mkContext hand'
-    let string = formContextString context
-    let tsumo = isTsumo handContext
-    let closure = isClosed handContext
-    let hanOrYakumans = getContextHanOrYakumans context
-    case hanOrYakumans of
-        Left han -> do
-            let fu = getContextFu context
-            let name = hanToHandName han
-            putStrLn $
-                "\tYaku:\n"
-                    ++ string
-                    ++ "\t\t"
-                    ++ openClosed
-                    ++ toGreen (show (getSum han))
-                    ++ " Han total, with "
-                    ++ toBlue (show fu)
-                    ++ " Fu\n"
-                    ++ "\n\t"
-                    ++ toGreen (show (getScore han fu True tsumo))
-                    ++ " points for Dealer, "
-                    ++ toGreen (show (getScore han fu False tsumo))
-                    ++ " points for Non-Dealer"
-                    ++ ( if name /= ""
-                            then
-                                " ("
-                                    ++ toMagenta name
-                                    ++ ")."
-                            else ""
-                       )
-          where
-            name = hanToHandName han
-            openClosed = if closure then "Closed hand: " else "Open hand: "
-        Right yakumans ->
-            putStrLn $
-                string
-                    ++ "\t\t"
-                    ++ toGreen (show (yakumans))
-                    ++ " Yakuman total\n"
-                    ++ "\n\t"
-                    ++ toGreen (show (yakumans * 48000))
-                    ++ " points for Dealer, "
-                    ++ toGreen (show (yakumans * 32000))
-                    ++ " points for Non-Dealer."
+            let hand' = addDora dora hand
+            context@(Context _ handContext _) <- mkContext hand'
+            let string = formContextString context
+            let tsumo = isTsumo handContext
+            let closure = isClosed handContext
+            let hanOrYakumans = getContextHanOrYakumans context
+            case hanOrYakumans of
+                Left han -> do
+                    let fu = getContextFu context
+                    let name = hanToHandName han
+                    putStrLn $
+                        "\tYaku:\n"
+                            ++ string
+                            ++ "\t\t"
+                            ++ openClosed
+                            ++ toGreen (show (getSum han))
+                            ++ " Han total, with "
+                            ++ toBlue (show fu)
+                            ++ " Fu\n"
+                            ++ "\n\t"
+                            ++ toGreen (show (getScore han fu True tsumo))
+                            ++ " points for Dealer, "
+                            ++ toGreen (show (getScore han fu False tsumo))
+                            ++ " points for Non-Dealer"
+                            ++ ( if name /= ""
+                                    then
+                                        " ("
+                                            ++ toMagenta name
+                                            ++ ")."
+                                    else ""
+                               )
+                  where
+                    name = hanToHandName han
+                    openClosed = if closure then "Closed hand: " else "Open hand: "
+                Right yakumans ->
+                    putStrLn $
+                        string
+                            ++ "\t\t"
+                            ++ toGreen (show (yakumans))
+                            ++ " Yakuman total\n"
+                            ++ "\n\t"
+                            ++ toGreen (show (yakumans * 48000))
+                            ++ " points for Dealer, "
+                            ++ toGreen (show (yakumans * 32000))
+                            ++ " points for Non-Dealer."
 
 -- putStrLn "Input round and seat wind: "
 -- (Honour (Wind roundWind) _) : (Honour (Wind seatWind) _) : _ <- mkHand <$> getLine
