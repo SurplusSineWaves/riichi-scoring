@@ -346,6 +346,7 @@ _getFu (Pair tile, melds) c =
 -- Partial function!
 getContextFu :: Context -> Fu
 getContextFu (Context (Just ih) handContext _) = _getFu ih handContext
+getContextFu (Context Nothing handContext _) = 25
 
 scoreTableTsumoDealer :: M.Map (Han, Fu) Integer
 scoreTableTsumoDealer =
