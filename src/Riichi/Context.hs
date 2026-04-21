@@ -26,13 +26,12 @@ data HandContext = HandContext
     }
 
 getMinimalHandContext :: Hand -> Bool -> HandContext
-getMinimalHandContext hand sp =
+getMinimalHandContext hand sevenPairs =
     let
-        sevenPairs = sp
         orphans = thirteenOrphans hand
      in
         HandContext
-            { isClosed = False
+            { isClosed = True
             , isTsumo = False
             , riichi = RiichiContext{isRiichi = False, isIppatsu = False}
             , wait = WaitContext{isRyanmanWait = False, isShanponWait = False}
@@ -41,6 +40,12 @@ getMinimalHandContext hand sp =
             , isThirteenOrphans = orphans
             , dora = hand & map getDora & sum
             }
+
+openHandContext :: HandContext -> HandContext
+openHandContext handContext = handContext{isClosed = False}
+
+closeHandContext :: HandContext -> HandContext
+closeHandContext handContext = handContext{isClosed = True}
 
 addRiichiContext :: HandContext -> IO HandContext
 addRiichiContext handContext = do
@@ -230,10 +235,13 @@ data YakumanContext = YakumanContext
     , isRyuuiisou :: Bool
     , isChuurenPoutou :: Bool
     , isDaisuushii :: Bool
+    , isKokushiMusou :: Bool
     }
 
-mkYakumanContext :: Hand -> Maybe InterpretedHand -> IO (Maybe YakumanContext)
-mkYakumanContext hand (Just ih) =
+-- maybeClosure var allows us to shortcicuit the IO check. If we already know whether the hand is closed or not,
+-- we don't ask. This way, the yaku command doesn't ask, and the score command does.
+mkYakumanContext :: Hand -> Maybe InterpretedHand -> Maybe Bool -> IO (Maybe YakumanContext)
+mkYakumanContext hand (Just ih) maybeClosure =
     do
         let isSuuaa = suuankou ih
         let isSuuka = suukantsu ih
@@ -244,7 +252,10 @@ mkYakumanContext hand (Just ih) =
         let isRyuui = ryuuiisou hand
         isChuur <-
             if chuurenPoutou hand
-                then askYesNo "Is the hand closed? [y/n]: "
+                then case maybeClosure of
+                    Nothing -> askYesNo "Is the hand closed? [y/n]: "
+                    Just True -> return True
+                    Just False -> return False
                 else return False
         let isDaisu = daisuushii ih
         if or [isSuuaa, isSuuka, isDaisa, isShous, isTsuui, isChinr, isRyuui, isChuur, isDaisu]
@@ -261,16 +272,17 @@ mkYakumanContext hand (Just ih) =
                             , isRyuuiisou = isRyuui
                             , isChuurenPoutou = isChuur
                             , isDaisuushii = isDaisu
+                            , isKokushiMusou = False
                             }
             else
                 return $ Nothing
-mkYakumanContext hand Nothing =
+mkYakumanContext hand Nothing _ =
     let
         isTsuui = tsuuiisou hand
         isChinr = chinroutou hand
         isRyuui = ryuuiisou hand
      in
-        if or [isTsuui, isChinr, isRyuui]
+        if (or [isTsuui, isChinr, isRyuui]) && chiitoitsu hand
             then
                 return $
                     Just
@@ -284,9 +296,26 @@ mkYakumanContext hand Nothing =
                             , isRyuuiisou = isRyuui
                             , isChuurenPoutou = False
                             , isDaisuushii = False
+                            , isKokushiMusou = False
                             }
             else
-                return Nothing
+                if thirteenOrphans hand
+                    then
+                        return $
+                            Just
+                                YakumanContext
+                                    { isSuuankou = False
+                                    , isSuukantsu = False
+                                    , isDaisangen = False
+                                    , isShousuushii = False
+                                    , isTsuuiisou = False
+                                    , isChinroutou = False
+                                    , isRyuuiisou = False
+                                    , isChuurenPoutou = False
+                                    , isDaisuushii = False
+                                    , isKokushiMusou = True
+                                    }
+                    else return Nothing
 data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
 
 mkContext :: Hand -> IO Context
@@ -295,27 +324,30 @@ mkContext hand = do
         if chiitoitsu hand
             then askYesNo "Seven pairs? [y/n]: "
             else return False
-    let handContext = getMinimalHandContext hand sevenPairs
+    let handContext@HandContext{isThirteenOrphans = orphans} = getMinimalHandContext hand sevenPairs
     maybeIh <-
-        if sevenPairs
+        if sevenPairs || orphans
             then
                 return Nothing
             else do
                 let ihs = interpretHand hand
-                ih <-
-                    if length ihs > 1
-                        then do
-                            putStrLn "Select hand interpretation: "
-                            sequence_ $ [("[" ++ show n ++ "]: " ++ (ih & showInterpretedHand)) & putStrLn | (n :: Integer, ih) <- zip [0 ..] ihs]
-                            n <- read <$> getLine :: IO Int
-                            return (ihs !! n)
-                        else do
-                            putStrLn "Found one way to interpret this hand: "
-                            let ih = head ihs
-                            putStrLn (showInterpretedHand ih)
-                            return ih
-                return $ Just ih
-    maybeYakumanContext <- mkYakumanContext hand maybeIh
+                if length ihs == 0
+                    then undefined
+                    else do
+                        ih <-
+                            if length ihs > 1
+                                then do
+                                    putStrLn "Select hand interpretation: "
+                                    sequence_ $ [("[" ++ show n ++ "]: " ++ (ih & showInterpretedHand)) & putStrLn | (n :: Integer, ih) <- zip [0 ..] ihs]
+                                    n <- read <$> getLine :: IO Int
+                                    return (ihs !! n)
+                                else do
+                                    putStrLn "Found one way to interpret this hand: "
+                                    let ih = head ihs
+                                    putStrLn (showInterpretedHand ih)
+                                    return ih
+                        return $ Just ih
+    maybeYakumanContext <- mkYakumanContext hand maybeIh Nothing
     case maybeYakumanContext of
         Nothing -> do
             handContext' <- pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext

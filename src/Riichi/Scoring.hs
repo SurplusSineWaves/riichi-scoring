@@ -210,7 +210,7 @@ formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext
             when (isRiichi riichiContext) $ tell $ toCyan "\t1 Han: Riichi\n"
             when (isIppatsu riichiContext) $ tell $ toCyan "\t1 Han: Ippatsu\n"
             when (isMenzenTsumo yakuContext) $ tell $ toCyan "\t1 Han: Fully concealed hand\n"
-            when (isChiitoitsu yakuContext) $ tell $ toCyan "\t2 Han: Seven pairs"
+            when (isChiitoitsu yakuContext) $ tell $ toCyan "\t2 Han: Seven pairs\n"
             when (isPinfu yakuContext) $ tell $ toCyan "\t1 Han: Pinfu\n"
             when (isTanyao yakuContext) $ tell $ toCyan "\t1 Han: All simples\n"
             when (isHaku yakuContext) $ tell $ toCyan "\t1 Han: Haku (White Dragon)\n"
@@ -284,6 +284,7 @@ formYakumanString yakumanContext =
             when (isRyuuiisou yakumanContext) $ tell $ toMagenta "\tYakuman: All Green\n"
             when (isChuurenPoutou yakumanContext) $ tell $ toMagenta "\tYakuman: Nine Gates\n"
             when (isDaisuushii yakumanContext) $ tell $ toMagenta "\tDouble Yakuman: Big Winds\n"
+            when (isKokushiMusou yakumanContext) $ tell $ toMagenta "\tYakuman: Thirteen Orphans\n"
         (_, string) = runWriter yakumanWriter
      in
         string
@@ -300,6 +301,7 @@ getYakumanCount yakumanContext =
             when (isRyuuiisou yakumanContext) $ tell 1
             when (isChuurenPoutou yakumanContext) $ tell 1
             when (isDaisuushii yakumanContext) $ tell 2
+            when (isKokushiMusou yakumanContext) $ tell 1
         (_, yakumans) = runWriter yakumanWriter
      in
         getSum yakumans
@@ -311,6 +313,14 @@ formContextString (Context _ _ (Right yakumanContext)) = formYakumanString yakum
 getContextHanOrYakumans :: Context -> Either Han Int
 getContextHanOrYakumans (Context _ _ (Left yakuContext)) = Left $ getYakuHan yakuContext
 getContextHanOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakumanCount yakumanContext
+
+getContextHansOrYakumans :: Context -> Either (Han, Han) Int
+getContextHansOrYakumans (Context _ _ (Left yakuContext@YakuContext{yakuHandContext = handContext})) =
+    Left $
+        ( getYakuHan yakuContext{yakuHandContext = closeHandContext handContext}
+        , getYakuHan yakuContext{yakuHandContext = openHandContext handContext}
+        )
+getContextHansOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakumanCount yakumanContext
 
 _getFu :: InterpretedHand -> HandContext -> Fu
 _getFu (Pair tile, melds) c =
