@@ -11,7 +11,7 @@ import Control.Monad (when)
 import Control.Monad.Writer
 import Data.Function ((&))
 import Data.Map qualified as M
-import Data.Monoid (Sum)
+import Data.Monoid (Sum (..))
 import Riichi.Context
 import Riichi.Meld
 import Riichi.Tile
@@ -272,10 +272,37 @@ getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{rii
         han
 
 formYakumanString :: YakumanContext -> String
-formYakumanString _ = ""
-
+formYakumanString yakumanContext =
+    let
+        yakumanWriter :: Writer String () = do
+            when (isSuuankou yakumanContext) $ tell $ toMagenta "\tYakuman: Four Concealed Triplets\n"
+            when (isSuukantsu yakumanContext) $ tell $ toMagenta "\tYakuman: Four Kans\n"
+            when (isDaisangen yakumanContext) $ tell $ toMagenta "\tYakuman: Big Four Dragons\n"
+            when (isShousuushii yakumanContext) $ tell $ toMagenta "\tYakuman: Little Winds\n"
+            when (isTsuuiisou yakumanContext) $ tell $ toMagenta "\tYakuman: All Honours\n"
+            when (isChinroutou yakumanContext) $ tell $ toMagenta "\tYakuman: All Terminals\n"
+            when (isRyuuiisou yakumanContext) $ tell $ toMagenta "\tYakuman: All Green\n"
+            when (isChuurenPoutou yakumanContext) $ tell $ toMagenta "\tYakuman: Nine Gates\n"
+            when (isDaisuushii yakumanContext) $ tell $ toMagenta "\tDouble Yakuman: Big Winds\n"
+        (_, string) = runWriter yakumanWriter
+     in
+        string
 getYakumanCount :: YakumanContext -> Int
-getYakumanCount _ = 0
+getYakumanCount yakumanContext =
+    let
+        yakumanWriter :: Writer (Sum Int) () = do
+            when (isSuuankou yakumanContext) $ tell 1
+            when (isSuukantsu yakumanContext) $ tell 1
+            when (isDaisangen yakumanContext) $ tell 1
+            when (isShousuushii yakumanContext) $ tell 1
+            when (isTsuuiisou yakumanContext) $ tell 1
+            when (isChinroutou yakumanContext) $ tell 1
+            when (isRyuuiisou yakumanContext) $ tell 1
+            when (isChuurenPoutou yakumanContext) $ tell 1
+            when (isDaisuushii yakumanContext) $ tell 2
+        (_, yakumans) = runWriter yakumanWriter
+     in
+        getSum yakumans
 
 formContextString :: Context -> String
 formContextString (Context _ _ (Left yakuContext)) = formYakuString yakuContext

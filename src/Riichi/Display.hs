@@ -74,29 +74,6 @@ displayHandScore hand = do
     let closure = isClosed handContext
     let hanOrYakumans = getContextHanOrYakumans context
     case hanOrYakumans of
-        -- Left han -> do
-        --     let fu = getContextFu context
-        --     let name = hanToHandName han
-        --     putStrLn
-        --         ( string
-        --             ++ "\t\t"
-        --             ++ toGreen (show (getSum han))
-        --             ++ " Han total, closed by definition\n"
-        --             ++ "\n\t"
-        --             ++ toGreen (show (getScore han fu True tsumo))
-        --             ++ " points for Dealer, "
-        --             ++ toGreen (show (getScore han fu False tsumo))
-        --             ++ " points for Non-Dealer."
-        --             ++ ( if name /= ""
-        --                     then
-        --                         " ("
-        --                             ++ toMagenta name
-        --                             ++ ")."
-        --                     else ""
-        --                )
-        --         )
-        -- Right yakumans -> undefined
-        --
         Left han -> do
             let fu = getContextFu context
             let name = hanToHandName han

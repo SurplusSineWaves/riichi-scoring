@@ -6,7 +6,7 @@ Maintainer  : surplussinewaves@gmail.com
 -}
 module Riichi.Yaku where
 
-import Data.Either (lefts, rights)
+import Data.Either (isLeft, lefts, rights)
 import Data.Function
 import Data.List
 import Data.Set qualified as Set
@@ -143,7 +143,7 @@ sanshokuDoukou (_, melds) =
 
 -- | Check if a hand is a full flush
 chinitsu :: Hand -> Bool
-chinitsu hand = hand & map getTileSuit & allEqual
+chinitsu hand = (hand & map getTileSuit & allEqual) && (hand & head & getTileSuit & isLeft)
 
 -- | Check if a hand is a half flush
 honitsu :: Hand -> Bool
@@ -276,7 +276,6 @@ Does not check that the hand is valid to begin with, nor that it is closed.
 Note that kans are dissalowed by rule. A valid hand + length == 14 (which this function checks) ensures this.
 -}
 chuurenPoutou :: Hand -> Bool
--- Length == 9 precludes the possibility of a all honours chinitsu.
 chuurenPoutou hand = (chinitsu hand) && (length list == 9) && (head list >= 3) && (last list >= 3) && (length hand == 14)
   where
     list = (hand & sort & group & map length)

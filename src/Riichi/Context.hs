@@ -232,58 +232,61 @@ data YakumanContext = YakumanContext
     , isDaisuushii :: Bool
     }
 
-mkYakumanContext :: Hand -> Maybe InterpretedHand -> Maybe YakumanContext
+mkYakumanContext :: Hand -> Maybe InterpretedHand -> IO (Maybe YakumanContext)
 mkYakumanContext hand (Just ih) =
-    let
-        isSuuaa = suuankou ih
-        isSuuka = suukantsu ih
-        isDaisa = daisangen ih
-        isShous = shousuushii ih
-        isTsuui = tsuuiisou hand
-        isChinr = chinroutou hand
-        isRyuui = ryuuiisou hand
-        isChuur = chuurenPoutou hand
-        isDaisu = daisuushii ih
-     in
+    do
+        let isSuuaa = suuankou ih
+        let isSuuka = suukantsu ih
+        let isDaisa = daisangen ih
+        let isShous = shousuushii ih
+        let isTsuui = tsuuiisou hand
+        let isChinr = chinroutou hand
+        let isRyuui = ryuuiisou hand
+        isChuur <-
+            if chuurenPoutou hand
+                then askYesNo "Is the hand closed? [y/n]: "
+                else return False
+        let isDaisu = daisuushii ih
         if or [isSuuaa, isSuuka, isDaisa, isShous, isTsuui, isChinr, isRyuui, isChuur, isDaisu]
             then
-                Just
-                    YakumanContext
-                        { isSuuankou = isSuuaa
-                        , isSuukantsu = isSuuka
-                        , isDaisangen = isDaisa
-                        , isShousuushii = isShous
-                        , isTsuuiisou = isTsuui
-                        , isChinroutou = isChinr
-                        , isRyuuiisou = isRyuui
-                        , isChuurenPoutou = isChuur
-                        , isDaisuushii = isDaisu
-                        }
+                return $
+                    Just
+                        YakumanContext
+                            { isSuuankou = isSuuaa
+                            , isSuukantsu = isSuuka
+                            , isDaisangen = isDaisa
+                            , isShousuushii = isShous
+                            , isTsuuiisou = isTsuui
+                            , isChinroutou = isChinr
+                            , isRyuuiisou = isRyuui
+                            , isChuurenPoutou = isChuur
+                            , isDaisuushii = isDaisu
+                            }
             else
-                Nothing
+                return $ Nothing
 mkYakumanContext hand Nothing =
     let
         isTsuui = tsuuiisou hand
         isChinr = chinroutou hand
         isRyuui = ryuuiisou hand
-        isChuur = chuurenPoutou hand
      in
-        if or [isTsuui, isChinr, isRyuui, isChuur]
+        if or [isTsuui, isChinr, isRyuui]
             then
-                Just
-                    YakumanContext
-                        { isSuuankou = False
-                        , isSuukantsu = False
-                        , isDaisangen = False
-                        , isShousuushii = False
-                        , isTsuuiisou = isTsuui
-                        , isChinroutou = isChinr
-                        , isRyuuiisou = isRyuui
-                        , isChuurenPoutou = isChuur
-                        , isDaisuushii = False
-                        }
+                return $
+                    Just
+                        YakumanContext
+                            { isSuuankou = False
+                            , isSuukantsu = False
+                            , isDaisangen = False
+                            , isShousuushii = False
+                            , isTsuuiisou = isTsuui
+                            , isChinroutou = isChinr
+                            , isRyuuiisou = isRyuui
+                            , isChuurenPoutou = False
+                            , isDaisuushii = False
+                            }
             else
-                Nothing
+                return Nothing
 data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
 
 mkContext :: Hand -> IO Context
@@ -312,7 +315,7 @@ mkContext hand = do
                             putStrLn (showInterpretedHand ih)
                             return ih
                 return $ Just ih
-    let maybeYakumanContext = mkYakumanContext hand maybeIh
+    maybeYakumanContext <- mkYakumanContext hand maybeIh
     case maybeYakumanContext of
         Nothing -> do
             handContext' <- pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
