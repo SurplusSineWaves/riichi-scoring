@@ -26,3 +26,7 @@ Reworked seven pairs detection to ensure hand has 14 tiles.
 
 ## 0.3.0.0
 Fixed error in scoring triple triplets, was previously scored as 1 han open.
+Implemented new backend for scoring and yaku detection via "context" based
+approach, defined in new Context submodule. This helps simplify function
+signatures for operations that need many pieces of information besides just the
+superficial composition of a hand.
