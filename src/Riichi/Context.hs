@@ -340,11 +340,13 @@ mkContext hand = do
                                     putStrLn "Select hand interpretation: "
                                     sequence_ $ [("[" ++ show n ++ "]: " ++ (ih & showInterpretedHand)) & putStrLn | (n :: Integer, ih) <- zip [0 ..] ihs]
                                     n <- read <$> getLine :: IO Int
+                                    putStrLn ""
                                     return (ihs !! n)
                                 else do
                                     putStrLn "Found one way to interpret this hand: "
                                     let ih = head ihs
                                     putStrLn (showInterpretedHand ih)
+                                    putStrLn ""
                                     return ih
                         return $ Just ih
     maybeYakumanContext <- mkYakumanContext hand maybeIh Nothing

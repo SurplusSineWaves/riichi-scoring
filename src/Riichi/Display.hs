@@ -94,6 +94,11 @@ displayHandScore :: Hand -> IO ()
 displayHandScore hand = do
     putStrLn "Input dora (or leave blank):"
     dora <- mkHand <$> getLine
+    if dora /= []
+        then
+            putStrLn ""
+        else return ()
+
     let hand' = addDora dora hand
     context@(Context _ handContext _) <- mkContext hand'
     let string = formContextString context
