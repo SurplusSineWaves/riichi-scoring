@@ -228,11 +228,14 @@ showInterpretedHand (pair, melds) = (show pair) : (map show melds) & intersperse
 
 getRonMeld :: [Meld] -> IO [Meld]
 getRonMeld melds = do
-    putStrLn "Which meld was opened by Ron? (enter an index): "
+    putStrLn "Which meld was opened by Ron? (leave blank if it was the pair): "
     sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
     input <- getLine
-    let index :: Int = input & read
-    return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld)
+    if input == ""
+        then return melds
+        else
+            let index :: Int = input & read
+             in return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld)
 
 getOpenMelds :: [Meld] -> IO [Meld]
 getOpenMelds melds = do

@@ -327,7 +327,7 @@ _getFu (Pair tile, melds) c =
     let
         sw = seatWind $ wind c
         rw = roundWind $ wind c
-        goodWait = (isRyanmanWait $ wait c) || (isShanponWait $ wait c)
+        goodWait = not $ (isRyanmanWait $ wait c) || (isShanponWait $ wait c)
         tsumo = isTsumo c
         closure = isClosed c
         meldsFu = melds & map getMeldFu & sum
