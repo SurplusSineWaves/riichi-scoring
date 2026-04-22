@@ -28,6 +28,10 @@ description:
   This package provides a CLI tool with commands for determining the yaku, fu, and score of a hand in Riichi Mahjong. It can also determine the waits of a partial hand.
   See README.md for usage, or run: riichi --help
 
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
 -- The license under which the package is released.
 license: BSD-3-Clause
 -- The file containing the license text.
