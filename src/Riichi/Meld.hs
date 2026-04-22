@@ -34,7 +34,8 @@ getDora :: Tile -> Dora
 getDora (Honour _ d) = d
 getDora (Numeric _ _ d) = d
 
-newtype Pair = Pair Tile deriving (Show)
+-- Note derived equality will ignore dora as tile Eq ignores dora
+newtype Pair = Pair Tile deriving (Show, Eq)
 
 data Meld = Chi Tile Tile Tile Open | Pon Tile Open | Kan Tile Open deriving (Ord)
 type Open = Bool
