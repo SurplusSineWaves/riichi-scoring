@@ -30,3 +30,15 @@ Implemented new backend for scoring and yaku detection via "context" based
 approach, defined in new Context submodule. This helps simplify function
 signatures for operations that need many pieces of information besides just the
 superficial composition of a hand.
+
+## 0.3.0.1
+Now only ask for dora after we know the hand is not a yakuman, as part of the
+mkContext function (previously handled dora in displayHandScore).
+Four concealed triplets now asks about concealment. It wasn't doing this before,
+a bug introduced by the refactor, since mkYakumanContext intentionally gets less
+information than mkYakuContext since generally it needs less.
+Now only ask for wind context if we see a wind tile in the hand. Note even a
+wind pair could matter - it won't affect most yaku but affects Fu.
+Speaking of - 
+    NOTE: Seat+Round wind pair counts as a yakuhai pair and awards
+    2+2=4 Fu. Some rulesets would only award 2 Fu.

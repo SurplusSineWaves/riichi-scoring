@@ -243,7 +243,16 @@ data YakumanContext = YakumanContext
 mkYakumanContext :: Hand -> Maybe InterpretedHand -> Maybe Bool -> IO (Maybe YakumanContext)
 mkYakumanContext hand (Just ih) maybeClosure =
     do
-        let isSuuaa = suuankou ih
+        -- let isSuuaa = suuankou ih
+        isSuuaa <-
+            if suuankou ih
+                -- Want to check concealment without the whole handContext, add riichi context, add closure context
+                -- rigmarole. If we've been told the hand is open, then one of the four triplets is open since these
+                -- are all the melds. If the hand is closed, a meld could still be open so we need to ask.
+                then case maybeClosure of
+                    Just False -> return False
+                    otherwise -> askYesNo "Are the four triplets all concealed? [y/n]: "
+                else return False
         let isSuuka = suukantsu ih
         let isDaisa = daisangen ih
         let isShous = shousuushii ih
@@ -324,7 +333,7 @@ mkContext hand = do
         if chiitoitsu hand
             then askYesNo "Seven pairs? [y/n]: "
             else return False
-    let handContext@HandContext{isThirteenOrphans = orphans} = getMinimalHandContext hand sevenPairs
+    let orphans = thirteenOrphans hand
     maybeIh <-
         if sevenPairs || orphans
             then
@@ -352,12 +361,25 @@ mkContext hand = do
     maybeYakumanContext <- mkYakumanContext hand maybeIh Nothing
     case maybeYakumanContext of
         Nothing -> do
-            handContext' <-
+            putStrLn "Input dora (or leave blank):"
+            dora <- mkHand <$> getLine
+            if dora /= []
+                then
+                    putStrLn ""
+                else return ()
+
+            let hand' = addDora dora hand
+            -- I suppose this will calculate thirteenOrphans hand' all over again, slight inneficiency in that sense
+            -- as we are checking it twice... Except... Laziness probably saves us from that!
+            let handContext = getMinimalHandContext hand' sevenPairs
+            handContext' <- do
+                let hasWind = hand' & (filter isWind) & (/= [])
                 if not sevenPairs
-                    then pure handContext >>= addWindContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
+                    then pure handContext >>= (if hasWind then addWindContext else pure) >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
                     else pure handContext >>= addRiichiContext >>= addTsumoContext
             (maybeIh', handContext'') <- addClosedContext maybeIh handContext'
-            let yakuContext = mkYakuContext hand maybeIh' handContext''
+            let yakuContext = mkYakuContext hand' maybeIh' handContext''
             return $ Context maybeIh' handContext'' (Left yakuContext)
         Just yakumanContext -> do
+            let handContext@HandContext{isThirteenOrphans = orphans} = getMinimalHandContext hand sevenPairs
             return $ Context maybeIh handContext (Right yakumanContext)
