@@ -31,7 +31,7 @@ approach, defined in new Context submodule. This helps simplify function
 signatures for operations that need many pieces of information besides just the
 superficial composition of a hand.
 
-## 0.3.0.1
+## 0.3.1.0
 Now only ask for dora after we know the hand is not a yakuman, as part of the
 mkContext function (previously handled dora in displayHandScore).
 Four concealed triplets now asks about concealment. It wasn't doing this before,
