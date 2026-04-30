@@ -45,4 +45,5 @@ Speaking of -
 
 ## 0.4.0.0
 Extended documentation. Old getFu replaced with new one (previously _getFu).
+Removed old getYaku function
 
