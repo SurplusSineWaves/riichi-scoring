@@ -45,9 +45,8 @@ Pinfu
 We don't yet distinguish between yaku and han - a hand with no yaku, only dora,
 is treated like normal and has its score printed.
 
-Also need to add Haddock doc strings
-
 Potentially a good idea to replace some data objects with records, e.g Tile and
 Meld.
 
-Postpone dora addition to after we're sure the hand isn't a (non-counted) yakuman
+A Mangan of less than 4 han is currently not labeled as such, but is scored
+correctly.

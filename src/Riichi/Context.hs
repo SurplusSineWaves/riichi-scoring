@@ -1,19 +1,25 @@
+{- |
+Module      : Riichi.Context
+Description : Functions and datatypes for tracking the context surrounding a hand, such as closure, riichi, seat wind, yakus ...
+License     : BSD-3-Clause
+Maintainer  : surplussinewaves@gmail.com
+-}
 module Riichi.Context where
 
+import Control.Exception (handle)
 import Data.Function ((&))
 import Riichi.Meld
 import Riichi.Tile
 import Riichi.Yaku
 
+-- | Ask a yes/no question
 askYesNo :: String -> IO Bool
 askYesNo string = do
     putStrLn string
     input <- getLine
     if input == "y" then return True else return False
 
-{- | Record to track the additional context for a hand. Fields with a Maybe type are information that
-we may not need in order to fully understand the hand.
--}
+-- | Record to track the additional context for a hand.
 data HandContext = HandContext
     { isClosed :: Bool
     , isTsumo :: Bool
@@ -25,6 +31,11 @@ data HandContext = HandContext
     , dora :: Integer
     }
 
+{- | Get a basic hand context with the minimal amount of information. Defaults to a closed hand
+| with no riichi, tsumo, ippatsu, special waits and East round and seat wind. Calculates the dora
+| and figures out if the hand is thirteen orphans. The boolean input specifies whether the hand
+| is seven pairs
+-}
 getMinimalHandContext :: Hand -> Bool -> HandContext
 getMinimalHandContext hand sevenPairs =
     let
@@ -41,33 +52,42 @@ getMinimalHandContext hand sevenPairs =
             , dora = hand & map getDora & sum
             }
 
+-- | Make a hand context open
 openHandContext :: HandContext -> HandContext
 openHandContext handContext = handContext{isClosed = False}
 
+-- | Make a hand context closed
 closeHandContext :: HandContext -> HandContext
 closeHandContext handContext = handContext{isClosed = True}
 
+-- | Ask for information to add riichi context to the hand context.
 addRiichiContext :: HandContext -> IO HandContext
 addRiichiContext handContext = do
     riichiContext <- askRiichiContext
     return handContext{riichi = riichiContext}
 
+-- | Ask about the waits of the hand, and add this context
 addWaitContext :: HandContext -> IO HandContext
 addWaitContext handContext = do
     waitContext <- askWaitContext
     return handContext{wait = waitContext}
 
+-- | Ask about the round and seat winds, and add this context
 addWindContext :: HandContext -> IO HandContext
 addWindContext handContext = do
     windContext <- askWindContext
     return handContext{wind = windContext}
 
+-- | Ask if the hand was tsumo, and add this context
 addTsumoContext :: HandContext -> IO HandContext
 addTsumoContext handContext = do
     tsumo <- askYesNo "Tsumo? [y/n]:"
     return handContext{isTsumo = tsumo}
 
--- The context must already know riichi and tsumo values for this to work
+{- | Figure out which melds are open / closed, if the hand has the standard shape. Return the
+| updated melds along with the updated hand context. The context must already know riichi and
+| tsumo values for this to work
+-}
 addClosedContext :: Maybe InterpretedHand -> HandContext -> IO (Maybe InterpretedHand, HandContext)
 addClosedContext (Just (tile, melds)) handContext = do
     let HandContext{isTsumo = t, riichi = RiichiContext{isRiichi = r}} = handContext
@@ -87,11 +107,13 @@ addClosedContext (Just (tile, melds)) handContext = do
     return (Just (tile, melds'), handContext{isClosed = closedHand})
 addClosedContext Nothing handContext = return (Nothing, handContext{isClosed = True})
 
+-- | The context for the waits of a hand
 data WaitContext = WaitContext
     { isRyanmanWait :: Bool
     , isShanponWait :: Bool
     }
 
+-- | Ask about the waits, and return a wait context.
 askWaitContext :: IO (WaitContext)
 askWaitContext = do
     ryanmanWait <- askYesNo "Did the hand have an open wait? [y/n]: "
@@ -101,18 +123,22 @@ askWaitContext = do
             else askYesNo "Did the hand have a dual pair wait? [y/n]: "
     return WaitContext{isRyanmanWait = ryanmanWait, isShanponWait = shanponWait}
 
+-- | The context for the seat and round winds for a hand
 data WindContext = WindContext
     {seatWind :: Wind, roundWind :: Wind}
 
+-- | Ask about round and seat winds, and return a wind context.
 askWindContext :: IO (WindContext)
 askWindContext = do
     putStrLn "Input round and seat wind: "
     (Honour (Wind r) _) : (Honour (Wind s) _) : _ <- mkHand <$> getLine
     return WindContext{seatWind = s, roundWind = r}
 
+-- | Context tracking if a hand is riichi / ippatsu
 data RiichiContext = RiichiContext
     {isRiichi :: Bool, isIppatsu :: Bool}
 
+-- | Ask about the hand being riichi, return a riichi context.
 askRiichiContext :: IO (RiichiContext)
 askRiichiContext = do
     riichi <- askYesNo "Riichi? [y/n]: "
@@ -122,6 +148,7 @@ askRiichiContext = do
             else return False
     return RiichiContext{isRiichi = riichi, isIppatsu = ippatsu}
 
+-- | A context that tracks the yaku that a hand has
 data YakuContext = YakuContext
     -- , isTsumo :: Bool
     { isPinfu :: Bool
@@ -151,6 +178,7 @@ data YakuContext = YakuContext
       isChiitoitsu :: Bool
     }
 
+-- | Given a hand, possibly an interpretation, and the surrounding context, build a yaku context.
 mkYakuContext :: Hand -> Maybe InterpretedHand -> HandContext -> YakuContext
 mkYakuContext hand (Just ih) handContext =
     let
@@ -225,6 +253,7 @@ mkYakuContext hand Nothing handContext@HandContext{isTsumo = tsumo} =
             , isChiitoitsu = chiitoitsu hand
             }
 
+-- | A context that tracks the yakuman that a hand has
 data YakumanContext = YakumanContext
     { isSuuankou :: Bool
     , isSuukantsu :: Bool
@@ -238,8 +267,10 @@ data YakumanContext = YakumanContext
     , isKokushiMusou :: Bool
     }
 
--- maybeClosure var allows us to shortcicuit the IO check. If we already know whether the hand is closed or not,
+-- maybeClosure var allows us to shortcircuit the IO check. If we already know whether the hand is closed or not,
 -- we don't ask. This way, the yaku command doesn't ask, and the score command does.
+
+-- | Construct a yakuman context, asking questions when necessary
 mkYakumanContext :: Hand -> Maybe InterpretedHand -> Maybe Bool -> IO (Maybe YakumanContext)
 mkYakumanContext hand (Just ih) maybeClosure =
     do
@@ -325,8 +356,11 @@ mkYakumanContext hand Nothing _ =
                                     , isKokushiMusou = True
                                     }
                     else return Nothing
+
+-- | Overarching context type
 data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
 
+-- | Top level interface for building a context about a hand. Determines the interpretation, yaku, yakuman etc
 mkContext :: Hand -> IO Context
 mkContext hand = do
     sevenPairs <-

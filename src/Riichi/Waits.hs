@@ -11,6 +11,7 @@ import Data.List
 import Riichi.Meld
 import Riichi.Tile
 
+-- | Get the waits of a hand, represented as a list of tiles.
 getWaits :: Hand -> [Tile]
 getWaits hand =
     if length hand < 13
@@ -54,6 +55,10 @@ getWaits hand =
                                     else let [a, b] = diff in return (meldWait a b)
              in (sevenPairsWait ++ orphansWaits ++ fourMeldsWaits ++ threeMeldWaits) & sort & group & map head
 
+{- | Find the waits of a partial meld, specified as two tiles. Note we'll never be waiting on a Kan, since
+forming a Kan with a single tile means you already had a meld, thus already had a complete hand. But a
+player can't be holding a complete hand.
+-}
 meldWait :: Tile -> Tile -> [Tile]
 meldWait a b
     | a == b = [a]

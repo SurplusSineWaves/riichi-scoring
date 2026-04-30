@@ -42,3 +42,7 @@ wind pair could matter - it won't affect most yaku but affects Fu.
 Speaking of - 
     NOTE: Seat+Round wind pair counts as a yakuhai pair and awards
     2+2=4 Fu. Some rulesets would only award 2 Fu.
+
+## 0.4.0.0
+Extended documentation. Old getFu replaced with new one (previously _getFu).
+

@@ -106,41 +106,50 @@ instance Eq Tile where
     (==) (Numeric suit value _) (Numeric suit' value' _) = (suit == suit') && (value == value')
     (==) _ _ = False
 
+-- | Get the suit of a tile, as an Either
 getTileSuit :: Tile -> Either Suit Honour
 getTileSuit (Numeric Pin _ _) = Left Pin
 getTileSuit (Numeric Man _ _) = Left Man
 getTileSuit (Numeric Sou _ _) = Left Sou
 getTileSuit (Honour honour _) = Right honour
 
+-- | Check if a tile is a simple (2-8 Numeric)
 isSimple :: Tile -> Bool
 isSimple (Honour _ _) = False
 isSimple (Numeric _ 1 _) = False
 isSimple (Numeric _ 9 _) = False
 isSimple _ = True
 
+-- | Check if a tile is a terminal (1 or 9 Numeric)
 isTerminal :: Tile -> Bool
 isTerminal (Numeric _ 1 _) = True
 isTerminal (Numeric _ 9 _) = True
 isTerminal _ = False
 
+-- | Check if a tile is an honour (dragon or wind)
 isHonour :: Tile -> Bool
 isHonour (Honour _ _) = True
 isHonour _ = False
 
+-- | Check if a tile is numeric
 isNumeric :: Tile -> Bool
 isNumeric = not . isHonour
 
+-- | Check if a tile is a dragon
 isDragon :: Tile -> Bool
 isDragon (Honour (Dragon _) _) = True
 isDragon _ = False
 
+-- | Check if a tile is a wind
 isWind :: Tile -> Bool
 isWind (Honour (Wind _) _) = True
 isWind _ = False
 
+-- | Check if an honour is a dragon
 honourIsDragon :: Honour -> Bool
 honourIsDragon (Dragon _) = True
 honourIsDragon _ = False
 
+-- | Check if an honour is a wind
 honourIsWind :: Honour -> Bool
 honourIsWind = not . honourIsDragon

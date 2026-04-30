@@ -17,132 +17,137 @@ import Riichi.Meld
 import Riichi.Tile
 import Riichi.Yaku
 
-type YakumanCount = Sum Int
+-- | Type alias
+type YakumanCount = Int
+
+-- | Type alias
 type Han = Sum Int
 
-getYaku :: Hand -> Maybe InterpretedHand -> Bool -> Bool -> Bool -> Bool -> Wind -> Wind -> Bool -> (Either (Han, Han) YakumanCount, String)
-getYaku hand (Just ih@(Pair _, melds)) riichi ippatsu tsumo ryanmanWait seatWind roundWind closedHand =
-    -- The caller should ensure ih is not empty, as some of these yaku funcitons only look
-    -- at the hand, and don't re-check if it has a valid interpretation.
-    let
-        -- Check Yakuman first.
-        yakumanWriter :: Writer (YakumanCount, String) () = do
-            when (suuankou ih) $ tell (1, toMagenta "\tYakuman: Four Concealed Triplets\n")
-            when (suukantsu ih) $ tell (1, toMagenta "\tYakuman: Four Kans\n")
-            when (daisangen ih) $ tell (1, toMagenta "\tYakuman: Big Four Dragons\n")
-            when (shousuushii ih) $ tell (1, toMagenta "\tYakuman: Little Winds\n")
-            when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours\n")
-            when (chinroutou hand) $ tell (1, toMagenta "\tYakuman: All Terminals\n")
-            when (ryuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Green\n")
-            when (chuurenPoutou hand && closedHand) $ tell (1, toMagenta "\tYakuman: Nine Gates\n")
-            when (daisuushii ih) $ tell (2, toMagenta "\tDouble Yakuman: Big Winds\n")
-        (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
+-- getYaku :: Hand -> Maybe InterpretedHand -> Bool -> Bool -> Bool -> Bool -> Wind -> Wind -> Bool -> (Either (Han, Han) YakumanCount, String)
+-- getYaku hand (Just ih@(Pair _, melds)) riichi ippatsu tsumo ryanmanWait seatWind roundWind closedHand =
+--     -- The caller should ensure ih is not empty, as some of these yaku funcitons only look
+--     -- at the hand, and don't re-check if it has a valid interpretation.
+--     let
+--         -- Check Yakuman first.
+--         yakumanWriter :: Writer (YakumanCount, String) () = do
+--             when (suuankou ih) $ tell (1, toMagenta "\tYakuman: Four Concealed Triplets\n")
+--             when (suukantsu ih) $ tell (1, toMagenta "\tYakuman: Four Kans\n")
+--             when (daisangen ih) $ tell (1, toMagenta "\tYakuman: Big Four Dragons\n")
+--             when (shousuushii ih) $ tell (1, toMagenta "\tYakuman: Little Winds\n")
+--             when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours\n")
+--             when (chinroutou hand) $ tell (1, toMagenta "\tYakuman: All Terminals\n")
+--             when (ryuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Green\n")
+--             when (chuurenPoutou hand && closedHand) $ tell (1, toMagenta "\tYakuman: Nine Gates\n")
+--             when (daisuushii ih) $ tell (2, toMagenta "\tDouble Yakuman: Big Winds\n")
+--         (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
+--
+--         hanWriter :: Writer (Han, Han, String) () = do
+--             when (riichi) $ tell (1, 0, toCyan "\t1 Han: Riichi\n")
+--             when (ippatsu) $ tell (1, 0, toCyan "\t1 Han: Ippatsu\n")
+--             when (tsumo && and (map meldIsClosed melds)) $ tell (1, 0, toCyan "\t1 Han: Fully concealed hand\n")
+--             when (pinfu ih seatWind roundWind ryanmanWait closedHand) $ tell (1, 0, toCyan "\t1 Han: Pinfu\n")
+--             when (tanyao hand) $ tell (1, 1, toCyan "\t1 Han: All simples\n")
+--             when (haku ih) $ tell (1, 1, toCyan "\t1 Han: Haku (White Dragon)\n")
+--             when (hatsu ih) $ tell (1, 1, toCyan "\t1 Han: Hatsu (Green Dragon)\n")
+--             when (chun ih) $ tell (1, 1, toCyan "\t1 Han: Chun (Red Dragon)\n")
+--             when (checkWind seatWind ih) $ tell (1, 1, toCyan "\t1 Han: Seat wind\n")
+--             when (checkWind roundWind ih) $ tell (1, 1, toCyan "\t1 Han: Round wind\n")
+--             when (sanshokuDoujun ih) $ tell (2, 1, toCyan "\t2 Han: Mixed triple sequence (-1 Han if open)\n")
+--             when (sanshokuDoukou ih) $ tell (2, 2, toCyan "\t2 Han: Triple triplets\n")
+--             when (sanankou ih) $ tell (2, 2, toCyan "\t2 Han: Three concealed triplets\n")
+--             let (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
+--             if fullFlush
+--                 then
+--                     tell (6, 5, toCyan "\t6 Han: Full flush (-1 Han if open)\n")
+--                 else
+--                     if halfFlush
+--                         then
+--                             tell (3, 2, toCyan "\t3 Han: Half flush (-1 Han if open)\n")
+--                         else
+--                             return ()
+--             when (toitoi ih) $ tell (2, 2, toCyan "\t2 Han: All triplets\n")
+--             when (ittsuu ih) $ tell (2, 1, toCyan "\t2 Han: Pure straight (-1 Han if open)\n")
+--             when (sankantsu ih) $ tell (2, 2, toCyan "\t2 Han: Three kans\n")
+--             when (shousangen ih) $ tell (2, 2, toCyan "\t2 Han: Little three dragons\n")
+--             let (twicePure, singlePure) = (ryanpeikou ih, iipeikou ih)
+--             if twicePure
+--                 then
+--                     tell (3, 0, toCyan "\t3 Han: Twice pure double sequence (Closed only)\n")
+--                 else
+--                     if singlePure
+--                         then
+--                             tell (1, 0, toCyan "\t1 Han: Pure double sequence (Closed only)\n")
+--                         else
+--                             return ()
+--             let (fullyOutside, halfOutside, terminalsHonours) = (junchan ih, chanta ih, honroutou hand)
+--             if fullyOutside
+--                 then
+--                     tell (3, 2, toCyan "\t3 Han: Fully outside hand (-1 Han if open)\n")
+--                 else
+--                     if terminalsHonours
+--                         then
+--                             tell (2, 2, toCyan "\t2 Han: All terminals and honours\n")
+--                         else
+--                             if halfOutside
+--                                 then
+--                                     tell (2, 1, toCyan "\t2 Han: Half outside hand (-1 Han if open)\n")
+--                                 else
+--                                     return ()
+--             when (dora > 0) $ tell (fromInteger dora, fromInteger dora, toCyan ("\t" ++ show dora ++ " Han: Dora\n"))
+--           where
+--             dora = hand & map getDora & sum
+--
+--         (_, (hanClosed, hanOpen, output)) = runWriter hanWriter
+--      in
+--         if yakumans > 0
+--             then (Right yakumans, yakumanOutput)
+--             else
+--                 if output == ""
+--                     then
+--                         (Left (0, 0), "\tNo explicit yaku found, riichi or menzen tsumo is required\n")
+--                     else
+--                         (Left (hanClosed, hanOpen), output)
+-- getYaku hand Nothing riichi ippatsu tsumo _ _ _ _ =
+--     let
+--         -- Check Yakuman first.
+--         yakumanWriter :: Writer (YakumanCount, String) () = do
+--             when (thirteenOrphans hand) $ tell (1, toMagenta "\tYakuman: Thirteen Orphans (Double Yakuman if wait is 13 sided)\n")
+--             when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours (+ seven pairs)\n")
+--         (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
+--
+--         hanWriter :: Writer (Han, String) () = do
+--             when (riichi) $ tell (1, toCyan "\t1 Han: Riichi\n")
+--             when (ippatsu) $ tell (1, toCyan "\t1 Han: Ippatsu\n")
+--             when (tsumo) $ tell (1, toCyan "\t1 Han: Fully concealed hand\n")
+--             when (tanyao hand) $ tell (1, toCyan "\t1 Han: All simples\n")
+--             let (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
+--             if fullFlush
+--                 then
+--                     tell (6, toCyan "\t6 Han: Full flush\n")
+--                 else
+--                     if halfFlush
+--                         then
+--                             tell (3, toCyan "\t3 Han: Half flush\n")
+--                         else
+--                             return ()
+--             when (honroutou hand) $ tell (2, toCyan "\t2 Han: All terminals and honours\n")
+--             when (dora > 0) $ tell (fromInteger dora, toCyan ("\t" ++ show dora ++ " Han: Dora\n"))
+--           where
+--             dora = hand & map getDora & sum
+--
+--         (_, (han, output)) = runWriter hanWriter
+--      in
+--         if yakumans > 0
+--             then (Right yakumans, yakumanOutput)
+--             else
+--                 if chiitoitsu hand
+--                     then
+--                         (Left (han + 2, 0), toCyan "\t2 Han: Seven pairs\n" ++ output)
+--                     else
+--                         (Left (0, 0), "This hand is not valid\n")
+--
 
-        hanWriter :: Writer (Han, Han, String) () = do
-            when (riichi) $ tell (1, 0, toCyan "\t1 Han: Riichi\n")
-            when (ippatsu) $ tell (1, 0, toCyan "\t1 Han: Ippatsu\n")
-            when (tsumo && and (map meldIsClosed melds)) $ tell (1, 0, toCyan "\t1 Han: Fully concealed hand\n")
-            when (pinfu ih seatWind roundWind ryanmanWait closedHand) $ tell (1, 0, toCyan "\t1 Han: Pinfu\n")
-            when (tanyao hand) $ tell (1, 1, toCyan "\t1 Han: All simples\n")
-            when (haku ih) $ tell (1, 1, toCyan "\t1 Han: Haku (White Dragon)\n")
-            when (hatsu ih) $ tell (1, 1, toCyan "\t1 Han: Hatsu (Green Dragon)\n")
-            when (chun ih) $ tell (1, 1, toCyan "\t1 Han: Chun (Red Dragon)\n")
-            when (checkWind seatWind ih) $ tell (1, 1, toCyan "\t1 Han: Seat wind\n")
-            when (checkWind roundWind ih) $ tell (1, 1, toCyan "\t1 Han: Round wind\n")
-            when (sanshokuDoujun ih) $ tell (2, 1, toCyan "\t2 Han: Mixed triple sequence (-1 Han if open)\n")
-            when (sanshokuDoukou ih) $ tell (2, 2, toCyan "\t2 Han: Triple triplets\n")
-            when (sanankou ih) $ tell (2, 2, toCyan "\t2 Han: Three concealed triplets\n")
-            let (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
-            if fullFlush
-                then
-                    tell (6, 5, toCyan "\t6 Han: Full flush (-1 Han if open)\n")
-                else
-                    if halfFlush
-                        then
-                            tell (3, 2, toCyan "\t3 Han: Half flush (-1 Han if open)\n")
-                        else
-                            return ()
-            when (toitoi ih) $ tell (2, 2, toCyan "\t2 Han: All triplets\n")
-            when (ittsuu ih) $ tell (2, 1, toCyan "\t2 Han: Pure straight (-1 Han if open)\n")
-            when (sankantsu ih) $ tell (2, 2, toCyan "\t2 Han: Three kans\n")
-            when (shousangen ih) $ tell (2, 2, toCyan "\t2 Han: Little three dragons\n")
-            let (twicePure, singlePure) = (ryanpeikou ih, iipeikou ih)
-            if twicePure
-                then
-                    tell (3, 0, toCyan "\t3 Han: Twice pure double sequence (Closed only)\n")
-                else
-                    if singlePure
-                        then
-                            tell (1, 0, toCyan "\t1 Han: Pure double sequence (Closed only)\n")
-                        else
-                            return ()
-            let (fullyOutside, halfOutside, terminalsHonours) = (junchan ih, chanta ih, honroutou hand)
-            if fullyOutside
-                then
-                    tell (3, 2, toCyan "\t3 Han: Fully outside hand (-1 Han if open)\n")
-                else
-                    if terminalsHonours
-                        then
-                            tell (2, 2, toCyan "\t2 Han: All terminals and honours\n")
-                        else
-                            if halfOutside
-                                then
-                                    tell (2, 1, toCyan "\t2 Han: Half outside hand (-1 Han if open)\n")
-                                else
-                                    return ()
-            when (dora > 0) $ tell (fromInteger dora, fromInteger dora, toCyan ("\t" ++ show dora ++ " Han: Dora\n"))
-          where
-            dora = hand & map getDora & sum
-
-        (_, (hanClosed, hanOpen, output)) = runWriter hanWriter
-     in
-        if yakumans > 0
-            then (Right yakumans, yakumanOutput)
-            else
-                if output == ""
-                    then
-                        (Left (0, 0), "\tNo explicit yaku found, riichi or menzen tsumo is required\n")
-                    else
-                        (Left (hanClosed, hanOpen), output)
-getYaku hand Nothing riichi ippatsu tsumo _ _ _ _ =
-    let
-        -- Check Yakuman first.
-        yakumanWriter :: Writer (YakumanCount, String) () = do
-            when (thirteenOrphans hand) $ tell (1, toMagenta "\tYakuman: Thirteen Orphans (Double Yakuman if wait is 13 sided)\n")
-            when (tsuuiisou hand) $ tell (1, toMagenta "\tYakuman: All Honours (+ seven pairs)\n")
-        (_, (yakumans, yakumanOutput)) = runWriter yakumanWriter
-
-        hanWriter :: Writer (Han, String) () = do
-            when (riichi) $ tell (1, toCyan "\t1 Han: Riichi\n")
-            when (ippatsu) $ tell (1, toCyan "\t1 Han: Ippatsu\n")
-            when (tsumo) $ tell (1, toCyan "\t1 Han: Fully concealed hand\n")
-            when (tanyao hand) $ tell (1, toCyan "\t1 Han: All simples\n")
-            let (fullFlush, halfFlush) = (chinitsu hand, honitsu hand)
-            if fullFlush
-                then
-                    tell (6, toCyan "\t6 Han: Full flush\n")
-                else
-                    if halfFlush
-                        then
-                            tell (3, toCyan "\t3 Han: Half flush\n")
-                        else
-                            return ()
-            when (honroutou hand) $ tell (2, toCyan "\t2 Han: All terminals and honours\n")
-            when (dora > 0) $ tell (fromInteger dora, toCyan ("\t" ++ show dora ++ " Han: Dora\n"))
-          where
-            dora = hand & map getDora & sum
-
-        (_, (han, output)) = runWriter hanWriter
-     in
-        if yakumans > 0
-            then (Right yakumans, yakumanOutput)
-            else
-                if chiitoitsu hand
-                    then
-                        (Left (han + 2, 0), toCyan "\t2 Han: Seven pairs\n" ++ output)
-                    else
-                        (Left (0, 0), "This hand is not valid\n")
-
+-- | Get the fu contributed by a meld (only pons and kans give fu)
 getMeldFu :: Meld -> Fu
 getMeldFu (Chi _ _ _ _) = 0
 getMeldFu (Pon (Numeric _ v _) True) = if v `elem` [1, 9] then 4 else 2
@@ -154,24 +159,26 @@ getMeldFu (Kan (Honour _ _) True) = 16
 getMeldFu (Kan (Numeric _ v _) False) = if v `elem` [1, 9] then 32 else 16
 getMeldFu (Kan (Honour _ _) False) = 32
 
--- Get fu for a standard hand. Seven pairs and thirteen orphans, as ever, are handled separately
+-- | Get fu for a standard hand. Seven pairs and thirteen orphans, as ever, are handled separately
 type Fu = Int
-getFu :: InterpretedHand -> Wind -> Wind -> Bool -> Bool -> Bool -> Fu
-getFu (Pair tile, melds) seatWind roundWind goodWait tsumo closedHand =
-    -- Perhaps a writer monad over the sum int monoid would be more elegant here but I think this more
-    -- descriptive method is fine too.
-    let meldsFu = melds & map getMeldFu & sum
-        waitFu = if goodWait then 2 else 0
-        yakuhaiFu =
-            (if (tile & isDragon) then 2 else 0)
-                + (if (tile == (Honour (Wind roundWind) 0)) then 2 else 0)
-                + (if (tile == (Honour (Wind seatWind) 0)) then 2 else 0)
-        ronClosedFu = if (not tsumo) && closedHand then 10 else 0
-        tsumoFu = if tsumo then 2 else 0
-     in roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)
-  where
-    roundUp n = last ([120, 110 .. 10] & filter (>= n))
 
+-- getFu :: InterpretedHand -> Wind -> Wind -> Bool -> Bool -> Bool -> Fu
+-- getFu (Pair tile, melds) seatWind roundWind goodWait tsumo closedHand =
+--     -- Perhaps a writer monad over the sum int monoid would be more elegant here but I think this more
+--     -- descriptive method is fine too.
+--     let meldsFu = melds & map getMeldFu & sum
+--         waitFu = if goodWait then 2 else 0
+--         yakuhaiFu =
+--             (if (tile & isDragon) then 2 else 0)
+--                 + (if (tile == (Honour (Wind roundWind) 0)) then 2 else 0)
+--                 + (if (tile == (Honour (Wind seatWind) 0)) then 2 else 0)
+--         ronClosedFu = if (not tsumo) && closedHand then 10 else 0
+--         tsumoFu = if tsumo then 2 else 0
+--      in roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)
+--   where
+--     roundUp n = last ([120, 110 .. 10] & filter (>= n))
+
+-- | Given the han and fu, together with dealer and tsumo info, return the score of a hand
 getScore :: Han -> Fu -> Bool -> Bool -> Integer
 getScore han fu dealer tsumo =
     if dealer
@@ -204,6 +211,7 @@ getScore han fu dealer tsumo =
                             Just score -> score
                             Nothing -> 0
 
+-- | Form the string describing the yaku, given a yaku context
 formYakuString :: YakuContext -> String
 formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = riichiContext, dora}} =
     let hanWriter :: Writer String () = do
@@ -236,6 +244,7 @@ formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext
         (_, string) = runWriter hanWriter
      in string
 
+-- | Get the han specified by a yaku context
 getYakuHan :: YakuContext -> Han
 getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = riichiContext, dora}} =
     let
@@ -271,6 +280,7 @@ getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{rii
      in
         han
 
+-- | Form the string describing the yakumans of a yakuman context
 formYakumanString :: YakumanContext -> String
 formYakumanString yakumanContext =
     let
@@ -288,7 +298,9 @@ formYakumanString yakumanContext =
         (_, string) = runWriter yakumanWriter
      in
         string
-getYakumanCount :: YakumanContext -> Int
+
+-- | Count the yakumans in a yakuman context
+getYakumanCount :: YakumanContext -> YakumanCount
 getYakumanCount yakumanContext =
     let
         yakumanWriter :: Writer (Sum Int) () = do
@@ -306,15 +318,18 @@ getYakumanCount yakumanContext =
      in
         getSum yakumans
 
+-- | For the string for a general context. Works fo yaku and yakuman.
 formContextString :: Context -> String
 formContextString (Context _ _ (Left yakuContext)) = formYakuString yakuContext
 formContextString (Context _ _ (Right yakumanContext)) = formYakumanString yakumanContext
 
-getContextHanOrYakumans :: Context -> Either Han Int
+-- | Get the han or yakumans of a context
+getContextHanOrYakumans :: Context -> Either Han YakumanCount
 getContextHanOrYakumans (Context _ _ (Left yakuContext)) = Left $ getYakuHan yakuContext
 getContextHanOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakumanCount yakumanContext
 
-getContextHansOrYakumans :: Context -> Either (Han, Han) Int
+-- | Get the open and closed han, or yakumans, of a context
+getContextHansOrYakumans :: Context -> Either (Han, Han) YakumanCount
 getContextHansOrYakumans (Context _ _ (Left yakuContext@YakuContext{yakuHandContext = handContext})) =
     Left $
         ( getYakuHan yakuContext{yakuHandContext = closeHandContext handContext}
@@ -322,8 +337,9 @@ getContextHansOrYakumans (Context _ _ (Left yakuContext@YakuContext{yakuHandCont
         )
 getContextHansOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakumanCount yakumanContext
 
-_getFu :: InterpretedHand -> HandContext -> Fu
-_getFu (Pair tile, melds) c =
+-- | Get the fu of an interpreted hand, given some context about the hand
+getFu :: InterpretedHand -> HandContext -> Fu
+getFu (Pair tile, melds) c =
     let
         sw = seatWind $ wind c
         rw = roundWind $ wind c
@@ -343,11 +359,12 @@ _getFu (Pair tile, melds) c =
   where
     roundUp n = last ([120, 110 .. 10] & filter (>= n))
 
--- Partial function!
+-- | Get the fu for a context.
 getContextFu :: Context -> Fu
-getContextFu (Context (Just ih) handContext _) = _getFu ih handContext
+getContextFu (Context (Just ih) handContext _) = getFu ih handContext
 getContextFu (Context Nothing handContext _) = 25
 
+-- | Score table hashmap for tsumo + dealer. 4 han and below.
 scoreTableTsumoDealer :: M.Map (Han, Fu) Integer
 scoreTableTsumoDealer =
     M.fromList
@@ -395,6 +412,7 @@ scoreTableTsumoDealer =
         , ((4, 110), 12000)
         ]
 
+-- | Score table hashmap for ron + dealer. 4 han and below.
 scoreTableRonDealer :: M.Map (Han, Fu) Integer
 scoreTableRonDealer =
     M.fromList
@@ -439,6 +457,7 @@ scoreTableRonDealer =
         , ((4, 110), 12000)
         ]
 
+-- | Score table hashmap for tsumo + non-dealer. 4 han and below.
 scoreTableTsumoNonDealer :: M.Map (Han, Fu) Integer
 scoreTableTsumoNonDealer =
     M.fromList
@@ -486,6 +505,7 @@ scoreTableTsumoNonDealer =
         , ((4, 110), 8000)
         ]
 
+-- | Score table hashmap for ron + non-dealer. 4 han and below.
 scoreTableRonNonDealer :: M.Map (Han, Fu) Integer
 scoreTableRonNonDealer =
     M.fromList
@@ -530,6 +550,7 @@ scoreTableRonNonDealer =
         , ((4, 110), 8000)
         ]
 
+-- | Score table for 5 han and up. Dealer
 manganToSanbaimanTableDealer :: M.Map Han Integer
 manganToSanbaimanTableDealer =
     M.fromList
@@ -543,6 +564,7 @@ manganToSanbaimanTableDealer =
         , (12, 36000)
         ]
 
+-- | Score table for 5 han and up. Non-dealer
 manganToSanbaimanTableNonDealer :: M.Map Han Integer
 manganToSanbaimanTableNonDealer =
     M.fromList
@@ -556,6 +578,7 @@ manganToSanbaimanTableNonDealer =
         , (12, 24000)
         ]
 
+-- | Get the name for a 5+ han hand
 hanToHandName :: Han -> String
 hanToHandName 5 = "Mangan"
 hanToHandName 6 = "Haneman"
