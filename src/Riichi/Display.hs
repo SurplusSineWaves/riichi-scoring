@@ -19,7 +19,7 @@ import Riichi.Tile
 import Riichi.Waits
 import Riichi.Yaku
 
--- | Implements the "yaku" command for the CLI. In need of a refactor.
+-- | Implements the "yaku" command for the CLI.
 displayHandYaku :: Hand -> IO ()
 displayHandYaku hand = do
     if length hand < 14
@@ -89,7 +89,7 @@ displayHandWaits hand = do
     let waits = getWaits hand
     putStrLn $ "Waits are: " ++ (waits & map show & intersperse ", " & concat)
 
--- | Implements the "score" command for the CLI. In need of a refactor, logic is rather serpentine at the moment.
+-- | Implements the "score" command for the CLI.
 displayHandScore :: Hand -> IO ()
 displayHandScore hand = do
     if length hand < 14

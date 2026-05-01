@@ -1,6 +1,7 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
+import Data.Maybe
 import Data.Set qualified as Set
 import Riichi.Context
 import Riichi.Meld
@@ -16,7 +17,8 @@ tests =
         "All tests"
         [ tileTests
         , meldsTests
-        , scoringTest
+        , scoringTests
+        , showTests
         ]
 
 tileTests :: TestTree
@@ -61,8 +63,8 @@ meldsTests =
                 (length ihs) @?= 3
         ]
 
-scoringTest :: TestTree
-scoringTest =
+scoringTests :: TestTree
+scoringTests =
     testGroup
         "Scoring test group"
         [ testCase "Scoring test 1" $
@@ -77,6 +79,28 @@ scoringTest =
             testHanHandScore "22221345663p NNN" "r" False False False False False North South False @?= (3, 40, 5200)
         , testCase "Scoring test 6" $
             testHanHandScore "234m 7p 567s 34p 66p 66p 57p" "5s w" False False False False True North South False @?= (2, 40, 3900)
+        , testCase "Scoring test 7" $
+            testHanHandScore "22p 55m 33s 88p rr NN EE" "N" False False False False True North South True @?= (4, 25, 9600)
+        ]
+
+showTests :: TestTree
+showTests =
+    testGroup
+        "Show test group"
+        [ testCase "Tile show test 1" $ (show $ (read $ "1p" :: Tile)) @?= "1p"
+        , testCase "Tile show test 2" $ (show $ (read $ "2m" :: Tile)) @?= "2m"
+        , testCase "Tile show test 3" $ (show $ (read $ "3s" :: Tile)) @?= "3s"
+        , testCase "Tile show test 4" $ (show $ (read $ "r" :: Tile)) @?= "r"
+        , testCase "Tile show test 5" $ (show $ (read $ "g" :: Tile)) @?= "g"
+        , testCase "Tile show test 6" $ (show $ (read $ "w" :: Tile)) @?= "w"
+        , testCase "Tile show test 7" $ (show $ (read $ "N" :: Tile)) @?= "N"
+        , testCase "Tile show test 8" $ (show $ (read $ "S" :: Tile)) @?= "S"
+        , testCase "Tile show test 9" $ (show $ (read $ "E" :: Tile)) @?= "E"
+        , testCase "Tile show test 10" $ (show $ (read $ "W" :: Tile)) @?= "W"
+        , testCase "Tile show test 11" $ (show $ (read $ "0p" :: Tile)) @?= "5p*"
+        , testCase "Hand show test" $
+            (showInterpretedHand $ (head $ interpretHand $ (mkHand "123p 456m 789s NNN rr")))
+                @?= "Pair r, Closed chi: 456 Man, Closed chi: 123 Pin, Closed chi: 789 Sou, Closed pon: NNN"
         ]
 
 testHanHandScore handString doraString riichi ippatsu tsumo closed dealer sw rw sevenPairs =
@@ -100,9 +124,9 @@ testHanHandScore handString doraString riichi ippatsu tsumo closed dealer sw rw 
                         , roundWind = rw
                         }
                 }
-        ih = head $ interpretHand hand'
-        yakuContext = mkYakuContext hand' (Just ih) handContext'
-        context = Context (Just ih) handContext' (Left yakuContext)
+        ih = listToMaybe $ interpretHand hand'
+        yakuContext = mkYakuContext hand' ih handContext'
+        context = Context ih handContext' (Left yakuContext)
         (Left han) = getContextHanOrYakumans context
         fu = getContextFu context
         score = getScore han fu dealer tsumo
