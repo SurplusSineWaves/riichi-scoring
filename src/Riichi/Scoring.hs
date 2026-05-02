@@ -38,22 +38,6 @@ getMeldFu (Kan (Honour _ _) False) = 32
 -- | Get fu for a standard hand. Seven pairs and thirteen orphans, as ever, are handled separately
 type Fu = Int
 
--- getFu :: InterpretedHand -> Wind -> Wind -> Bool -> Bool -> Bool -> Fu
--- getFu (Pair tile, melds) seatWind roundWind goodWait tsumo closedHand =
---     -- Perhaps a writer monad over the sum int monoid would be more elegant here but I think this more
---     -- descriptive method is fine too.
---     let meldsFu = melds & map getMeldFu & sum
---         waitFu = if goodWait then 2 else 0
---         yakuhaiFu =
---             (if (tile & isDragon) then 2 else 0)
---                 + (if (tile == (Honour (Wind roundWind) 0)) then 2 else 0)
---                 + (if (tile == (Honour (Wind seatWind) 0)) then 2 else 0)
---         ronClosedFu = if (not tsumo) && closedHand then 10 else 0
---         tsumoFu = if tsumo then 2 else 0
---      in roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)
---   where
---     roundUp n = last ([120, 110 .. 10] & filter (>= n))
-
 -- | Given the han and fu, together with dealer and tsumo info, return the score of a hand
 getScore :: Han -> Fu -> Bool -> Bool -> Integer
 getScore han fu dealer tsumo =
