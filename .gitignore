@@ -6,3 +6,4 @@ dist-newstyle/
 *.hp
 .cabal-sandbox/
 cabal.project.local
+.DS_Store
