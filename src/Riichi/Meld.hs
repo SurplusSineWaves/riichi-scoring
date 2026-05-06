@@ -184,9 +184,11 @@ formMelds hand@(tile : tiles) =
                 & group
                 & (map head)
      in
-        if possible_melds == []
-            then formMelds (tail hand)
-            else possible_melds
+        possible_melds ++ (formMelds $ tail hand)
+
+-- if possible_melds == []
+--     then formMelds (tail hand)
+--     else possible_melds
 
 -- | Count the tiles in a list of melds
 meldsLength :: [Meld] -> Int
