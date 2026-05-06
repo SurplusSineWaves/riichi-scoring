@@ -7,4 +7,4 @@ dist-newstyle/
 .cabal-sandbox/
 cabal.project.local
 .DS_Store
-*.tix
+riichi.tix
