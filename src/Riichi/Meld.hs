@@ -153,11 +153,11 @@ getPairSuit (Pair (Numeric suit _ _)) = Left suit
 getPairSuit (Pair (Honour honour _)) = Right honour
 
 -- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
-formMelds :: Hand -> [[Meld]]
-formMelds [] = [[]]
-formMelds [_] = [[]]
-formMelds [_, _] = [[]]
-formMelds hand@(tile : tiles) =
+form3Melds :: Hand -> [[Meld]]
+form3Melds [] = [[]]
+form3Melds [_] = [[]]
+form3Melds [_, _] = [[]]
+form3Melds hand@(tile : tiles) =
     let
         -- Form all possible sets of melds with the first meld including the first tile:
         -- triples = tiles & tails & init & (map (\x -> (head x, tail x))) & (map (\(tile2, final_tiles) -> [[tile, tile2, tile3] | tile3 <- final_tiles])) & concat
@@ -170,10 +170,10 @@ formMelds hand@(tile : tiles) =
             ( map
                 ( \triple@(tile1 : tile2 : tile3 : _) ->
                     if (isChi tile1 tile2 tile3)
-                        then map ((Chi tile1 tile2 tile3 False) :) (formMelds (hand \\ triple))
+                        then map ((Chi tile1 tile2 tile3 False) :) (form3Melds (hand \\ triple))
                         else
                             if (isPon tile1 tile2 tile3)
-                                then map ((Pon tile1 False) :) (formMelds (hand \\ triple))
+                                then map ((Pon tile1 False) :) (form3Melds (hand \\ triple))
                                 else []
                 )
                 triples
@@ -184,7 +184,12 @@ formMelds hand@(tile : tiles) =
                 & group
                 & (map head)
      in
-        possible_melds ++ (formMelds $ tail hand)
+        possible_melds ++ (form3Melds $ tail hand)
+
+formMelds hand = do
+    (kans, hand') <- findKans hand
+    melds <- form3Melds hand'
+    return $ kans ++ melds
 
 -- if possible_melds == []
 --     then formMelds (tail hand)
@@ -223,7 +228,7 @@ findKans hand =
         & map head
         & map (\tile -> (Kan tile False))
         & subsequences
-        & tail
+        -- & tail
         & map (\kans -> (kans, hand \\ (concat [tile & repeat & take 4 | Kan tile _ <- kans])))
 
 -- interpretHand assumes the hand consists of a pair and 4 melds (chis pons or kans).
@@ -239,25 +244,22 @@ interpretHand :: Hand -> [InterpretedHand]
 interpretHand hand =
     let
         possible_pairs = hand & findPairs
-        pairs_kans_hands = do
-            (pair, hand') <- possible_pairs
-            (kans, hand'') <- findKans hand'
-            melds <- formMelds hand''
-            return (pair, kans ++ melds)
-        -- possible_pairs
-        --     >>= \(pair, hand') ->
-        --         [(pair, kan, hand'') | (kan, hand'') <- findKans hand']
-        --             >>= \(pair, kan, hand'') -> [(pair, kan : melds) | melds <- formMelds hand'']
-        pairs_hands = do
+        pairs_melds = do
             (pair, hand') <- possible_pairs
             melds <- formMelds hand'
             return (pair, melds)
      in
-        -- possible_pairs
-        --     >>= (\(pair, hand') -> [(pair, melds) | melds <- formMelds hand'])
+        -- pairs_kans_hands = do
+        --     (pair, hand') <- possible_pairs
+        --     (kans, hand'') <- findKans hand'
+        --     melds <- formMelds hand''
+        --     return (pair, kans ++ melds)
+        -- pairs_hands = do
+        --     (pair, hand') <- possible_pairs
+        --     melds <- formMelds hand'
+        --     return (pair, melds)
 
-        (pairs_kans_hands ++ pairs_hands)
-            -- & (filter (\(_, melds) -> melds /= []))
+        pairs_melds
             & (filter (\(_, melds) -> (length hand) == 2 + (meldsLength melds)))
 
 -- | Show a full interpreted hand

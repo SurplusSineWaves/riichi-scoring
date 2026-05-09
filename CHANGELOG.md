@@ -47,3 +47,14 @@ Speaking of -
 Extended documentation. Old getFu replaced with new one (previously _getFu).
 Removed old getYaku function
 
+## 0.4.0.1
+Fixed catastrophic failure affecting waits command.
+
+## 0.4.1.0
+Fixed further problems with waits command. Previously, partial hands with kans
+were not considered. To fix this and also streamline the internal API, formMelds
+now returns all ways of pulling melds out of a hand, INCLUDING KANS. Previously
+the caller had to handle kans themselves. This makes the interpretHand function
+simpler, and fixes getWaits.
+
+
