@@ -54,7 +54,7 @@ Fixed catastrophic failure affecting waits command.
 Fixed further problems with waits command. Previously, partial hands with kans
 were not considered. To fix this and also streamline the internal API, formMelds
 now returns all ways of pulling melds out of a hand, INCLUDING KANS. Previously
-the caller had to handle kans themselves. This makes the interpretHand function
+the caller had to handle kans themself. This makes the interpretHand function
 simpler, and fixes getWaits.
 
 
