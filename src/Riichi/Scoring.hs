@@ -135,7 +135,7 @@ getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{rii
             when (isJunchan yakuContext) $ tell $ 2 + closedBonus
             when (isHonroutou yakuContext) $ tell $ 2
             when (isChanta yakuContext) $ tell $ 1 + closedBonus
-            tell $ fromInteger dora
+            tell $ Sum dora
         (_, han) = runWriter hanWriter
      in
         han

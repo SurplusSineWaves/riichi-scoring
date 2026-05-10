@@ -16,10 +16,10 @@ here too on a per tile basis (necessary for red fives)
 data Tile = Honour Honour Dora | Numeric Suit Value Dora deriving (Ord)
 
 -- | Simple type alias. Tracks dora value for a tile. Note red five is represented as dora 1.
-type Dora = Integer
+type Dora = Int
 
 -- | Type alias for the value of a Numeric tile.
-type Value = Integer
+type Value = Int
 
 -- | An honour tile is a dragon or a wind
 data Honour = Dragon (Dragon) | Wind (Wind) deriving (Show, Eq, Ord)

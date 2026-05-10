@@ -28,7 +28,7 @@ data HandContext = HandContext
     , wind :: WindContext
     , isSevenPairs :: Bool
     , isThirteenOrphans :: Bool
-    , dora :: Integer
+    , dora :: Dora
     }
 
 {- | Get a basic hand context with the minimal amount of information. Defaults to a closed hand
@@ -359,6 +359,9 @@ mkYakumanContext hand Nothing _ =
 
 -- | Overarching context type
 data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
+
+getContextDora :: Context -> Dora
+getContextDora (Context _ (HandContext{dora}) _) = dora
 
 -- | Top level interface for building a context about a hand. Determines the interpretation, yaku, yakuman etc
 mkContext :: Hand -> IO Context

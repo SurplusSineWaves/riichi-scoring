@@ -101,30 +101,34 @@ displayHandScore hand = do
             let closure = isClosed handContext
             let hanOrYakumans = getContextHanOrYakumans context
             case hanOrYakumans of
-                Left han -> do
-                    let fu = getContextFu context
-                    let name = hanToHandName han
-                    putStrLn $
-                        "\tYaku:\n"
-                            ++ string
-                            ++ "\t\t"
-                            ++ openClosed
-                            ++ toGreen (show (getSum han))
-                            ++ " Han total, with "
-                            ++ toBlue (show fu)
-                            ++ " Fu\n"
-                            ++ "\n\t"
-                            ++ toGreen (show (getScore han fu True tsumo))
-                            ++ " points for Dealer, "
-                            ++ toGreen (show (getScore han fu False tsumo))
-                            ++ " points for Non-Dealer"
-                            ++ ( if name /= ""
-                                    then
-                                        " ("
-                                            ++ toMagenta name
-                                            ++ ")."
-                                    else ""
-                               )
+                Left han ->
+                    if getContextDora context == (getSum han)
+                        then
+                            putStrLn $ "\n\t" ++ toRed "Hand has no yaku!"
+                        else do
+                            let fu = getContextFu context
+                            let name = hanToHandName han
+                            putStrLn $
+                                "\tYaku:\n"
+                                    ++ string
+                                    ++ "\t\t"
+                                    ++ openClosed
+                                    ++ toGreen (show (getSum han))
+                                    ++ " Han total, with "
+                                    ++ toBlue (show fu)
+                                    ++ " Fu\n"
+                                    ++ "\n\t"
+                                    ++ toGreen (show (getScore han fu True tsumo))
+                                    ++ " points for Dealer, "
+                                    ++ toGreen (show (getScore han fu False tsumo))
+                                    ++ " points for Non-Dealer"
+                                    ++ ( if name /= ""
+                                            then
+                                                " ("
+                                                    ++ toMagenta name
+                                                    ++ ")."
+                                            else ""
+                                       )
                   where
                     name = hanToHandName han
                     openClosed = if closure then "Closed hand: " else "Open hand: "

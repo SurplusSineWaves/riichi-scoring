@@ -132,7 +132,7 @@ meldIsKan _ = False
 {- | Get the "base" of a Meld. For a chi this is the lowest value. Otherwise it is the common value or
 | honour instance of the tiles.
 -}
-getMeldBase :: Meld -> Either Integer Honour
+getMeldBase :: Meld -> Either Value Honour
 getMeldBase (Chi (Numeric _ v1 _) (Numeric _ v2 _) (Numeric _ v3 _) _) = Left (minimum [v1, v2, v3])
 getMeldBase (Pon (Numeric _ v1 _) _) = Left v1
 getMeldBase (Kan (Numeric _ v1 _) _) = Left v1
