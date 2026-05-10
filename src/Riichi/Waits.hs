@@ -8,6 +8,7 @@ module Riichi.Waits where
 
 import Data.Function
 import Data.List
+import GHC.IO.Handle (noNewlineTranslation)
 import Riichi.Meld
 import Riichi.Tile
 

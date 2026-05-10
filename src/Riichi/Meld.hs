@@ -152,7 +152,7 @@ getPairSuit :: Pair -> Either Suit Honour
 getPairSuit (Pair (Numeric suit _ _)) = Left suit
 getPairSuit (Pair (Honour honour _)) = Right honour
 
--- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
+-- | Given a hand, return all the possible ways of pulling out chis and pons, in increasing order of length
 form3Melds :: Hand -> [[Meld]]
 form3Melds [] = [[]]
 form3Melds [_] = [[]]
@@ -160,7 +160,6 @@ form3Melds [_, _] = [[]]
 form3Melds hand@(tile : tiles) =
     let
         -- Form all possible sets of melds with the first meld including the first tile:
-        -- triples = tiles & tails & init & (map (\x -> (head x, tail x))) & (map (\(tile2, final_tiles) -> [[tile, tile2, tile3] | tile3 <- final_tiles])) & concat
         triples = do
             (tile2 : rest) <- tiles & tails & init
             tile3 <- rest
@@ -179,13 +178,19 @@ form3Melds hand@(tile : tiles) =
                 triples
                 & concat
             )
-                & map sort
-                & sort
-                & group
-                & (map head)
+                ++ (form3Melds $ tail hand)
      in
-        possible_melds ++ (form3Melds $ tail hand)
+        possible_melds
+            & map sort
+            & sortBy (\x y -> compare (length x) (length y))
+            & groupBy (\x y -> (length x) == (length y))
+            & map sort
+            & map group
+            & map (map head)
+            & concat
 
+-- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
+formMelds :: Hand -> [[Meld]]
 formMelds hand = do
     (kans, hand') <- findKans hand
     melds <- form3Melds hand'
