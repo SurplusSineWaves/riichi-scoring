@@ -22,8 +22,8 @@ The CLI tool supplied is the riichi command. Help information is as follows:
         Numeric tiles of the same suit, and honour tiles, can be 
         grouped as seen in the examples (but needn't be).
 
-        In scoring a hand, dora and seat/round wind must be supplied,
-        also in this format.
+        In scoring a hand, dora and seat/round wind may be required,
+        also supplied in this format.
 
 Internal libraries are also exposed.
 

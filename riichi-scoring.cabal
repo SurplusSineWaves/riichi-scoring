@@ -58,6 +58,7 @@ common warnings
 
 library
   exposed-modules:
+    Paths_riichi_scoring
     Riichi.Context
     Riichi.Display
     Riichi.Meld
@@ -68,6 +69,9 @@ library
 
   other-modules:
     ColourStrings
+
+  autogen-modules:
+    Paths_riichi_scoring
 
   hs-source-dirs: src
   build-depends:
