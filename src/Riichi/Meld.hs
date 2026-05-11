@@ -166,24 +166,25 @@ form3Melds hand@(tile : tiles) =
             return [tile, tile2, tile3]
 
         possible_melds =
-            ( map
-                ( \triple@(tile1 : tile2 : tile3 : _) ->
-                    if (isChi tile1 tile2 tile3)
-                        then map ((Chi tile1 tile2 tile3 False) :) (form3Melds (hand \\ triple))
-                        else
-                            if (isPon tile1 tile2 tile3)
-                                then map ((Pon tile1 False) :) (form3Melds (hand \\ triple))
-                                else []
-                )
-                triples
-                & concat
-            )
-                ++ (form3Melds $ tail hand)
+            (form3Melds $ tail hand)
+                ++ ( concat $ do
+                        triple@(tile1 : tile2 : tile3 : _) <- triples
+                        let nextMelds = form3Melds (hand \\ triple)
+                        if (isChi tile1 tile2 tile3)
+                            then
+                                return $ map ((Chi tile1 tile2 tile3 False) :) nextMelds
+                            else
+                                if (isPon tile1 tile2 tile3)
+                                    then
+                                        return $ map ((Pon tile1 False) :) nextMelds
+                                    else
+                                        return []
+                   )
      in
         possible_melds
-            & map sort
             & sortBy (\x y -> compare (length x) (length y))
             & groupBy (\x y -> (length x) == (length y))
+            & map (map sort)
             & map sort
             & map group
             & map (map head)
@@ -195,6 +196,50 @@ formMelds hand = do
     (kans, hand') <- findKans hand
     melds <- form3Melds hand'
     return $ kans ++ melds
+
+-- | Given a hand, return all the possible ways of spliting the entire hand into chis, pons and kans
+formComplete3Melds :: Hand -> [[Meld]]
+formComplete3Melds [] = [[]]
+formComplete3Melds [_] = [[]]
+formComplete3Melds hand@(tile : tiles) =
+    let
+        -- Form all possible sets of melds with the first meld including the first tile:
+        triples = do
+            (tile2 : rest) <- tiles & tails & init
+            tile3 <- rest
+            return [tile, tile2, tile3]
+
+        possible_melds =
+            ( concat $ do
+                triple@(tile1 : tile2 : tile3 : _) <- triples
+                let nextMelds = form3Melds (hand \\ triple)
+                if (isChi tile1 tile2 tile3)
+                    then
+                        return $ map ((Chi tile1 tile2 tile3 False) :) nextMelds
+                    else
+                        if (isPon tile1 tile2 tile3)
+                            then
+                                return $ map ((Pon tile1 False) :) nextMelds
+                            else
+                                return []
+            )
+     in
+        possible_melds
+            & filter (\x -> (length x) * 3 == (length hand))
+            & map sort
+            & sort
+            & group
+            & map head
+
+-- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
+formCompleteMelds :: Hand -> [[Meld]]
+formCompleteMelds hand = do
+    (kans, hand') <- findKans hand
+    melds <- formComplete3Melds hand'
+    let kans_melds = kans ++ melds
+    if length kans_melds == 4
+        then return kans_melds
+        else []
 
 -- if possible_melds == []
 --     then formMelds (tail hand)
@@ -251,19 +296,9 @@ interpretHand hand =
         possible_pairs = hand & findPairs
         pairs_melds = do
             (pair, hand') <- possible_pairs
-            melds <- formMelds hand'
+            melds <- formCompleteMelds hand'
             return (pair, melds)
      in
-        -- pairs_kans_hands = do
-        --     (pair, hand') <- possible_pairs
-        --     (kans, hand'') <- findKans hand'
-        --     melds <- formMelds hand''
-        --     return (pair, kans ++ melds)
-        -- pairs_hands = do
-        --     (pair, hand') <- possible_pairs
-        --     melds <- formMelds hand'
-        --     return (pair, melds)
-
         pairs_melds
             & (filter (\(_, melds) -> (length hand) == 2 + (meldsLength melds)))
 
