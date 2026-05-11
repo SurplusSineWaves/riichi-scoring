@@ -42,15 +42,6 @@ Menzen Tsumo
 Ippatsu 
 Pinfu 
 
-We now distinguish between yaku and han - a hand with no yaku, only dora,
-returns a no yaku message when scored. 
-
-Potentially a good idea to replace some data objects with records, e.g Tile and
-Meld.
-
-A Mangan of less than 4 han is currently not labeled as such, but is scored
-correctly.
-
 Instead of asking about the wait type of the hand, we could just ask for the
 winning tile and work it out ourselves. This would make the user experience a
 bit more straightforward.
