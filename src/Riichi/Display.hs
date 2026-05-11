@@ -107,7 +107,8 @@ displayHandScore hand = do
                             putStrLn $ "\n\t" ++ toRed "Hand has no yaku!"
                         else do
                             let fu = getContextFu context
-                            let name = hanToHandName han
+                            let name = hanFuToHandName han fu
+                            let openClosed = if closure then "Closed hand: " else "Open hand: "
                             putStrLn $
                                 "\tYaku:\n"
                                     ++ string
@@ -129,9 +130,6 @@ displayHandScore hand = do
                                                     ++ ")."
                                             else ""
                                        )
-                  where
-                    name = hanToHandName han
-                    openClosed = if closure then "Closed hand: " else "Open hand: "
                 Right yakumans ->
                     putStrLn $
                         string

@@ -74,33 +74,41 @@ yakuhaiDragons (_, melds) =
 checkPon :: Tile -> InterpretedHand -> Bool
 checkPon tile (_, melds) = Pon tile False `elem` melds
 
+-- | Check for the presence of a kan in an interpreted hand.
+checkKan :: Tile -> InterpretedHand -> Bool
+checkKan tile (_, melds) = Kan tile False `elem` melds
+
+-- | Check for the presence of a pon or kan in an interpreted hand.
+checkPonOrKan :: Tile -> InterpretedHand -> Bool
+checkPonOrKan t ih = (checkPon t ih) || (checkKan t ih)
+
 -- | Check for the presence of a white dragon triplet in an interpreted hand.
 haku :: InterpretedHand -> Bool
-haku = checkPon ((Honour $ Dragon $ White) 0)
+haku = checkPonOrKan ((Honour $ Dragon $ White) 0)
 
 -- | Check for the presence of a green dragon triplet in an interpreted hand.
 hatsu :: InterpretedHand -> Bool
-hatsu = checkPon ((Honour $ Dragon $ Green) 0)
+hatsu = checkPonOrKan ((Honour $ Dragon $ Green) 0)
 
 -- | Check for the presence of a red dragon triplet in an interpreted hand.
 chun :: InterpretedHand -> Bool
-chun = checkPon ((Honour $ Dragon $ Red) 0)
+chun = checkPonOrKan ((Honour $ Dragon $ Red) 0)
 
 -- | Check for the presence of a north wind triplet in an interpreted hand.
 checkNorth :: InterpretedHand -> Bool
-checkNorth = checkPon ((Honour $ Wind $ North) 0)
+checkNorth = checkPonOrKan ((Honour $ Wind $ North) 0)
 
 -- | Check for the presence of a east wind triplet in an interpreted hand.
 checkEast :: InterpretedHand -> Bool
-checkEast = checkPon ((Honour $ Wind $ East) 0)
+checkEast = checkPonOrKan ((Honour $ Wind $ East) 0)
 
 -- | Check for the presence of a south wind triplet in an interpreted hand.
 checkSouth :: InterpretedHand -> Bool
-checkSouth = checkPon ((Honour $ Wind $ South) 0)
+checkSouth = checkPonOrKan ((Honour $ Wind $ South) 0)
 
 -- | Check for the presence of a west wind triplet in an interpreted hand.
 checkWest :: InterpretedHand -> Bool
-checkWest = checkPon ((Honour $ Wind $ West) 0)
+checkWest = checkPonOrKan ((Honour $ Wind $ West) 0)
 
 -- | Check for the presence of a given wind triplet in an interpreted hand.
 checkWind :: Wind -> InterpretedHand -> Bool

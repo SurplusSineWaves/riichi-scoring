@@ -217,7 +217,7 @@ getFu (Pair tile, melds) c =
      in
         roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)
   where
-    roundUp n = last ([120, 110 .. 10] & filter (>= n))
+    roundUp n = last ([170, 160 .. 10] & filter (>= n))
 
 -- | Get the fu for a context.
 getContextFu :: Context -> Fu
@@ -439,13 +439,15 @@ manganToSanbaimanTableNonDealer =
         ]
 
 -- | Get the name for a 5+ han hand
-hanToHandName :: Han -> String
-hanToHandName 5 = "Mangan"
-hanToHandName 6 = "Haneman"
-hanToHandName 7 = "Haneman"
-hanToHandName 8 = "Baiman"
-hanToHandName 9 = "Baiman"
-hanToHandName 10 = "Baiman"
-hanToHandName 11 = "Sanbaiman"
-hanToHandName 12 = "Sanbaiman"
-hanToHandName n = if n >= 13 then "Counted Yakuman" else ""
+hanFuToHandName :: Han -> Fu -> String
+hanFuToHandName 3 fu = if fu >= 70 then "Mangan" else ""
+hanFuToHandName 4 fu = if fu >= 40 then "Mangan" else ""
+hanFuToHandName 5 _ = "Mangan"
+hanFuToHandName 6 _ = "Haneman"
+hanFuToHandName 7 _ = "Haneman"
+hanFuToHandName 8 _ = "Baiman"
+hanFuToHandName 9 _ = "Baiman"
+hanFuToHandName 10 _ = "Baiman"
+hanFuToHandName 11 _ = "Sanbaiman"
+hanFuToHandName 12 _ = "Sanbaiman"
+hanFuToHandName n _ = if n >= 13 then "Counted Yakuman" else ""
