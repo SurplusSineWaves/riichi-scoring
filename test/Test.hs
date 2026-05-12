@@ -31,10 +31,8 @@ tileTests =
         , testCase "Single tile read test" $
             ((read "0m" :: Tile) == (read "5m" :: Tile))
                 && (read "r" == Honour (Dragon Red) 1) @?= True
-        , testCase "Multi tile read test 1" $
-            (readTileBlock "123p" @?= [Numeric Pin 1 0, Numeric Pin 2 0, Numeric Pin 3 0])
-        , testCase "Multi tile read test 2" $
-            (readTileBlock "rwN" @?= [Honour (Dragon Red) 0, Honour (Dragon White) 0, Honour (Wind North) 0])
+        , testCase "Multi tile read test 1" (readTileBlock "123p" @?= [Numeric Pin 1 0, Numeric Pin 2 0, Numeric Pin 3 0])
+        , testCase "Multi tile read test 2" (readTileBlock "rwN" @?= [Honour (Dragon Red) 0, Honour (Dragon White) 0, Honour (Wind North) 0])
         ]
 
 meldsTests :: TestTree
@@ -60,7 +58,7 @@ meldsTests =
                 hand = mkHand "222m 333m 444m 555m 77p"
                 ihs = interpretHand hand
              in
-                (length ihs) @?= 3
+                length ihs @?= 3
         ]
 
 scoringTests :: TestTree
@@ -87,19 +85,19 @@ showTests :: TestTree
 showTests =
     testGroup
         "Show test group"
-        [ testCase "Tile show test 1" $ (show $ (read $ "1p" :: Tile)) @?= "1p"
-        , testCase "Tile show test 2" $ (show $ (read $ "2m" :: Tile)) @?= "2m"
-        , testCase "Tile show test 3" $ (show $ (read $ "3s" :: Tile)) @?= "3s"
-        , testCase "Tile show test 4" $ (show $ (read $ "r" :: Tile)) @?= "r"
-        , testCase "Tile show test 5" $ (show $ (read $ "g" :: Tile)) @?= "g"
-        , testCase "Tile show test 6" $ (show $ (read $ "w" :: Tile)) @?= "w"
-        , testCase "Tile show test 7" $ (show $ (read $ "N" :: Tile)) @?= "N"
-        , testCase "Tile show test 8" $ (show $ (read $ "S" :: Tile)) @?= "S"
-        , testCase "Tile show test 9" $ (show $ (read $ "E" :: Tile)) @?= "E"
-        , testCase "Tile show test 10" $ (show $ (read $ "W" :: Tile)) @?= "W"
-        , testCase "Tile show test 11" $ (show $ (read $ "0p" :: Tile)) @?= "5p*"
+        [ testCase "Tile show test 1" $ show (read "1p" :: Tile) @?= "1p"
+        , testCase "Tile show test 2" $ show (read "2m" :: Tile) @?= "2m"
+        , testCase "Tile show test 3" $ show (read "3s" :: Tile) @?= "3s"
+        , testCase "Tile show test 4" $ show (read "r" :: Tile) @?= "r"
+        , testCase "Tile show test 5" $ show (read "g" :: Tile) @?= "g"
+        , testCase "Tile show test 6" $ show (read "w" :: Tile) @?= "w"
+        , testCase "Tile show test 7" $ show (read "N" :: Tile) @?= "N"
+        , testCase "Tile show test 8" $ show (read "S" :: Tile) @?= "S"
+        , testCase "Tile show test 9" $ show (read "E" :: Tile) @?= "E"
+        , testCase "Tile show test 10" $ show (read "W" :: Tile) @?= "W"
+        , testCase "Tile show test 11" $ show (read "0p" :: Tile) @?= "5p*"
         , testCase "Hand show test" $
-            (showInterpretedHand $ (head $ interpretHand $ (mkHand "123p 456m 789s NNN rr")))
+            showInterpretedHand (head $ interpretHand (mkHand "123p 456m 789s NNN rr"))
                 @?= "Pair r, Closed chi: 456 Man, Closed chi: 123 Pin, Closed chi: 789 Sou, Closed pon: NNN"
         ]
 

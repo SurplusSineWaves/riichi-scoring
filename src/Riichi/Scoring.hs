@@ -11,6 +11,7 @@ import Control.Monad (when)
 import Control.Monad.Writer
 import Data.Function ((&))
 import Data.Map qualified as M
+import Data.Maybe (fromMaybe)
 import Data.Monoid (Sum (..))
 import Riichi.Context
 import Riichi.Meld
@@ -25,7 +26,7 @@ type Han = Sum Int
 
 -- | Get the fu contributed by a meld (only pons and kans give fu)
 getMeldFu :: Meld -> Fu
-getMeldFu (Chi _ _ _ _) = 0
+getMeldFu (Chi{}) = 0
 getMeldFu (Pon (Numeric _ v _) True) = if v `elem` [1, 9] then 4 else 2
 getMeldFu (Pon (Honour _ _) True) = 4
 getMeldFu (Pon (Numeric _ v _) False) = if v `elem` [1, 9] then 8 else 4
@@ -45,31 +46,19 @@ getScore han fu dealer tsumo =
         then case han of
             _
                 | han >= 13 -> 32000
-                | han >= 5 -> case M.lookup han manganToSanbaimanTableDealer of
-                    Just score -> score
-                    Nothing -> 0
+                | han >= 5 -> fromMaybe 0 (M.lookup han manganToSanbaimanTableDealer)
                 | otherwise ->
                     if tsumo
-                        then case M.lookup (han, fu) scoreTableTsumoDealer of
-                            Just score -> score
-                            Nothing -> 0
-                        else case M.lookup (han, fu) scoreTableRonDealer of
-                            Just score -> score
-                            Nothing -> 0
+                        then fromMaybe 0 (M.lookup (han, fu) scoreTableTsumoDealer)
+                        else fromMaybe 0 (M.lookup (han, fu) scoreTableRonDealer)
         else case han of
             _
                 | han >= 13 -> 24000
-                | han >= 5 -> case M.lookup han manganToSanbaimanTableNonDealer of
-                    Just score -> score
-                    Nothing -> 0
+                | han >= 5 -> fromMaybe 0 (M.lookup han manganToSanbaimanTableNonDealer)
                 | otherwise ->
                     if tsumo
-                        then case M.lookup (han, fu) scoreTableTsumoNonDealer of
-                            Just score -> score
-                            Nothing -> 0
-                        else case M.lookup (han, fu) scoreTableRonNonDealer of
-                            Just score -> score
-                            Nothing -> 0
+                        then fromMaybe 0 (M.lookup (han, fu) scoreTableTsumoNonDealer)
+                        else fromMaybe 0 (M.lookup (han, fu) scoreTableRonNonDealer)
 
 -- | Form the string describing the yaku, given a yaku context
 formYakuString :: YakuContext -> String
@@ -108,32 +97,32 @@ formYakuString yakuContext@YakuContext{yakuHandContext = handContext@HandContext
 getYakuHan :: YakuContext -> Han
 getYakuHan yakuContext@YakuContext{yakuHandContext = handContext@HandContext{riichi = riichiContext, dora}} =
     let
-        closedBonus = if (isClosed handContext == True) then 1 else 0
+        closedBonus = if isClosed handContext then 1 else 0
         hanWriter :: Writer Han () = do
-            when (isRiichi riichiContext) $ tell $ 1
-            when (isIppatsu riichiContext) $ tell $ 1
-            when (isMenzenTsumo yakuContext) $ tell $ 1
-            when (isChiitoitsu yakuContext) $ tell $ 2
-            when (isPinfu yakuContext) $ tell $ 1
-            when (isTanyao yakuContext) $ tell $ 1
-            when (isHaku yakuContext) $ tell $ 1
-            when (isHatsu yakuContext) $ tell $ 1
-            when (isChun yakuContext) $ tell $ 1
-            when (isSeatWind yakuContext) $ tell $ 1
-            when (isRoundWind yakuContext) $ tell $ 1
+            when (isRiichi riichiContext) $ tell 1
+            when (isIppatsu riichiContext) $ tell 1
+            when (isMenzenTsumo yakuContext) $ tell 1
+            when (isChiitoitsu yakuContext) $ tell 2
+            when (isPinfu yakuContext) $ tell 1
+            when (isTanyao yakuContext) $ tell 1
+            when (isHaku yakuContext) $ tell 1
+            when (isHatsu yakuContext) $ tell 1
+            when (isChun yakuContext) $ tell 1
+            when (isSeatWind yakuContext) $ tell 1
+            when (isRoundWind yakuContext) $ tell 1
             when (isSanshokuDoujun yakuContext) $ tell $ 1 + closedBonus
-            when (isSanshokuDoukou yakuContext) $ tell $ 2
-            when (isSanankou yakuContext) $ tell $ 2
+            when (isSanshokuDoukou yakuContext) $ tell 2
+            when (isSanankou yakuContext) $ tell 2
             when (isChinitsu yakuContext) $ tell $ 5 + closedBonus
             when (isHonitsu yakuContext) $ tell $ 2 + closedBonus
-            when (isToitoi yakuContext) $ tell $ 2
+            when (isToitoi yakuContext) $ tell 2
             when (isIttsuu yakuContext) $ tell $ 1 + closedBonus
-            when (isSankantsu yakuContext) $ tell $ 2
-            when (isShousangen yakuContext) $ tell $ 2
+            when (isSankantsu yakuContext) $ tell 2
+            when (isShousangen yakuContext) $ tell 2
             when (isRyanpeikou yakuContext) $ tell $ 3 * closedBonus
-            when (isIipeikou yakuContext) $ tell $ closedBonus
+            when (isIipeikou yakuContext) $ tell closedBonus
             when (isJunchan yakuContext) $ tell $ 2 + closedBonus
-            when (isHonroutou yakuContext) $ tell $ 2
+            when (isHonroutou yakuContext) $ tell 2
             when (isChanta yakuContext) $ tell $ 1 + closedBonus
             tell $ Sum dora
         (_, han) = runWriter hanWriter
@@ -191,7 +180,7 @@ getContextHanOrYakumans (Context _ _ (Right yakumanContext)) = Right $ getYakuma
 -- | Get the open and closed han, or yakumans, of a context
 getContextHansOrYakumans :: Context -> Either (Han, Han) YakumanCount
 getContextHansOrYakumans (Context _ _ (Left yakuContext@YakuContext{yakuHandContext = handContext})) =
-    Left $
+    Left
         ( getYakuHan yakuContext{yakuHandContext = closeHandContext handContext}
         , getYakuHan yakuContext{yakuHandContext = openHandContext handContext}
         )
@@ -203,16 +192,16 @@ getFu (Pair tile, melds) c =
     let
         sw = seatWind $ wind c
         rw = roundWind $ wind c
-        goodWait = not $ (isRyanmanWait $ wait c) || (isShanponWait $ wait c)
+        goodWait = not $ isRyanmanWait (wait c) || isShanponWait (wait c)
         tsumo = isTsumo c
         closure = isClosed c
         meldsFu = melds & map getMeldFu & sum
         waitFu = if goodWait then 2 else 0
         yakuhaiFu =
-            (if (tile & isDragon) then 2 else 0)
-                + (if (tile == (Honour (Wind rw) 0)) then 2 else 0)
-                + (if (tile == (Honour (Wind sw) 0)) then 2 else 0)
-        ronClosedFu = if (not tsumo) && closure then 10 else 0
+            (if tile & isDragon then 2 else 0)
+                + (if tile == Honour (Wind rw) 0 then 2 else 0)
+                + (if tile == Honour (Wind sw) 0 then 2 else 0)
+        ronClosedFu = if not tsumo && closure then 10 else 0
         tsumoFu = if tsumo then 2 else 0
      in
         roundUp (20 + meldsFu + waitFu + yakuhaiFu + ronClosedFu + tsumoFu)

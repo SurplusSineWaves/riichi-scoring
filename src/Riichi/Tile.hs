@@ -7,7 +7,7 @@ Maintainer  : surplussinewaves@gmail.com
 module Riichi.Tile where
 
 import Data.Function
-import Data.List (intersperse)
+import Data.List (intercalate, intersperse)
 
 {- |
 Tile data type. Can be an honour tile or a numeric tile. Dora is tracked
@@ -22,7 +22,7 @@ type Dora = Int
 type Value = Int
 
 -- | An honour tile is a dragon or a wind
-data Honour = Dragon (Dragon) | Wind (Wind) deriving (Show, Eq, Ord)
+data Honour = Dragon Dragon | Wind Wind deriving (Show, Eq, Ord)
 
 -- | Dragon enum
 data Dragon = White | Green | Red deriving (Show, Eq, Ord)
@@ -39,16 +39,16 @@ data Suit = Man | Pin | Sou deriving (Show, Eq, Ord)
 -}
 instance Read Tile where
     readsPrec :: Int -> ReadS Tile
-    readsPrec _ (x : []) = [(tile, [])]
+    readsPrec _ [x] = [(tile, [])]
       where
         tile = case x of
-            'N' -> (Honour $ Wind $ North) 0
-            'E' -> (Honour $ Wind $ East) 0
-            'S' -> (Honour $ Wind $ South) 0
-            'W' -> (Honour $ Wind $ West) 0
-            'r' -> (Honour $ Dragon $ Red) 0
-            'g' -> (Honour $ Dragon $ Green) 0
-            'w' -> (Honour $ Dragon $ White) 0
+            'N' -> (Honour $ Wind North) 0
+            'E' -> (Honour $ Wind East) 0
+            'S' -> (Honour $ Wind South) 0
+            'W' -> (Honour $ Wind West) 0
+            'r' -> (Honour $ Dragon Red) 0
+            'g' -> (Honour $ Dragon Green) 0
+            'w' -> (Honour $ Dragon White) 0
     readsPrec _ (x : y : _) = do
         let ((value, dora), suit) =
                 ( case x of
@@ -80,7 +80,7 @@ readTileBlock string =
             's' -> (init string, "s ")
             _ -> (string, " ")
      in
-        stripped & map (\c -> [c]) & intersperse separator & concat & (++ separator) & words & map read
+        map pure stripped & intercalate separator & (++ separator) & words & map read
 
 -- | Implements an inverse to read
 instance Show Tile where
@@ -94,15 +94,15 @@ instance Show Tile where
     show (Numeric Pin 5 d) = if d == 0 then "5p" else "5p*"
     show (Numeric Man 5 d) = if d == 0 then "5m" else "5m*"
     show (Numeric Sou 5 d) = if d == 0 then "5s" else "5s*"
-    show (Numeric Pin n _) = (show n) ++ "p"
-    show (Numeric Man n _) = (show n) ++ "m"
-    show (Numeric Sou n _) = (show n) ++ "s"
+    show (Numeric Pin n _) = show n ++ "p"
+    show (Numeric Man n _) = show n ++ "m"
+    show (Numeric Sou n _) = show n ++ "s"
 
 {- | Almost identical to what would result from deriving Eq on Tile, except we choose to
 | ignore the Dora value
 -}
 instance Eq Tile where
-    (==) (Honour honour _) (Honour honour' _) = (honour == honour')
+    (==) (Honour honour _) (Honour honour' _) = honour == honour'
     (==) (Numeric suit value _) (Numeric suit' value' _) = (suit == suit') && (value == value')
     (==) _ _ = False
 

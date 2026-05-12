@@ -21,7 +21,7 @@ type Hand = [Tile]
 | eg: 123p parses to 1 Pin, 2 Pin, 3 Pin; rgNE parses to Red, Green, North, East
 -}
 mkHand :: String -> Hand
-mkHand tiles = tiles & words & (map readTileBlock) & concat
+mkHand tiles = concatMap readTileBlock (tiles & words)
 
 -- | Add dora (in the first argument) a the hand (in the second argument)
 addDora :: Hand -> Hand -> Hand
@@ -31,8 +31,8 @@ addDora dora@(doraTile : rest) hand = do
     tile <- hand'
     if doraTile == tile
         then return $ case tile of
-            (Honour x d) -> (Honour x (d + 1))
-            (Numeric s v d) -> (Numeric s v (d + 1))
+            (Honour x d) -> Honour x (d + 1)
+            (Numeric s v d) -> Numeric s v (d + 1)
         else
             return tile
 
@@ -54,38 +54,38 @@ type Open = Bool
 instance Eq Meld where
     (==) (Pon tile1 _) (Pon tile2 _) = tile1 == tile2
     (==) (Kan tile1 _) (Kan tile2 _) = tile1 == tile2
-    (==) (Chi tile1 tile2 tile3 _) (Chi tile1' tile2' tile3' _) = Set.fromList ([tile1, tile2, tile3]) == Set.fromList ([tile1', tile2', tile3'])
+    (==) (Chi tile1 tile2 tile3 _) (Chi tile1' tile2' tile3' _) = Set.fromList [tile1, tile2, tile3] == Set.fromList [tile1', tile2', tile3']
     (==) _ _ = False
 
 -- | Using the show instance for tile, show melds as "Open/Closed chi/pon/kan: tile tile tile (tile)"
 instance Show Meld where
-    show (Chi (Numeric suit v1 _) (Numeric _ v2 _) (Numeric _ v3 _) True) = "Open chi: " ++ ((map show $ sort [v1, v2, v3]) & concat) ++ " " ++ (show suit)
-    show (Chi (Numeric suit v1 _) (Numeric _ v2 _) (Numeric _ v3 _) False) = "Closed chi: " ++ ((map show $ sort [v1, v2, v3]) & concat) ++ " " ++ (show suit)
-    show (Pon (Numeric suit v1 _) True) = "Open pon: " ++ (v1 & show & repeat & (take 3) & concat) ++ " " ++ (show suit)
-    show (Pon (Numeric suit v1 _) False) = "Closed pon: " ++ (v1 & show & repeat & (take 3) & concat) ++ " " ++ (show suit)
-    show (Kan (Numeric suit v1 _) True) = "Open kan: " ++ (v1 & show & repeat & (take 4) & concat) ++ " " ++ (show suit)
-    show (Kan (Numeric suit v1 _) False) = "Closed kan: " ++ (v1 & show & repeat & (take 4) & concat) ++ " " ++ (show suit)
-    show (Pon (tile) True) = "Open pon: " ++ (tile & show & repeat & (take 3) & concat)
-    show (Pon (tile) False) = "Closed pon: " ++ (tile & show & repeat & (take 3) & concat)
-    show (Kan (tile) True) = "Open kan: " ++ (tile & show & repeat & (take 4) & concat)
-    show (Kan (tile) False) = "Closed kan: " ++ (tile & show & repeat & (take 4) & concat)
+    show (Chi (Numeric suit v1 _) (Numeric _ v2 _) (Numeric _ v3 _) True) = "Open chi: " ++ concatMap show (sort [v1, v2, v3]) ++ " " ++ show suit
+    show (Chi (Numeric suit v1 _) (Numeric _ v2 _) (Numeric _ v3 _) False) = "Closed chi: " ++ concatMap show (sort [v1, v2, v3]) ++ " " ++ show suit
+    show (Pon (Numeric suit v1 _) True) = "Open pon: " ++ (replicate 3 (v1 & show) & concat) ++ " " ++ show suit
+    show (Pon (Numeric suit v1 _) False) = "Closed pon: " ++ (replicate 3 (v1 & show) & concat) ++ " " ++ show suit
+    show (Kan (Numeric suit v1 _) True) = "Open kan: " ++ (replicate 4 (v1 & show) & concat) ++ " " ++ show suit
+    show (Kan (Numeric suit v1 _) False) = "Closed kan: " ++ (replicate 4 (v1 & show) & concat) ++ " " ++ show suit
+    show (Pon tile True) = "Open pon: " ++ (replicate 3 (tile & show) & concat)
+    show (Pon tile False) = "Closed pon: " ++ (replicate 3 (tile & show) & concat)
+    show (Kan tile True) = "Open kan: " ++ (replicate 4 (tile & show) & concat)
+    show (Kan tile False) = "Closed kan: " ++ (replicate 4 (tile & show) & concat)
 
 -- | Check if all elements of a list of equatable elements are equal
 allEqual :: (Eq a) => [a] -> Bool
 allEqual [] = True
 allEqual [_] = True
-allEqual (x : y : ys) = (x == y) && (allEqual (y : ys))
+allEqual (x : y : ys) = (x == y) && allEqual (y : ys)
 
 -- | Check if all elements of a list of equatable elements are different
 allDifferent :: (Eq a) => [a] -> Bool
 allDifferent [] = True
 allDifferent [_] = True
-allDifferent (x : xs) = (not (x `elem` xs)) && (allDifferent xs)
+allDifferent (x : xs) = notElem x xs && allDifferent xs
 
 -- | Check if three tiles form a chi (a sequence)
 isChi :: Tile -> Tile -> Tile -> Bool
 isChi (Numeric s1 v1 _) (Numeric s2 v2 _) (Numeric s3 v3 _) =
-    (allEqual [s1, s2, s3]) && (Set.fromList (map (subtract m) [v1, v2, v3]) == Set.fromList ([0, 1, 2]))
+    allEqual [s1, s2, s3] && (Set.fromList (map (subtract m) [v1, v2, v3]) == Set.fromList [0, 1, 2])
   where
     m = minimum [v1, v2, v3]
 isChi _ _ _ = False
@@ -116,7 +116,7 @@ openMeld (Kan a _) = Kan a True
 
 -- | Check if a meld is a chi
 meldIsChi :: Meld -> Bool
-meldIsChi (Chi _ _ _ _) = True
+meldIsChi (Chi{}) = True
 meldIsChi _ = False
 
 -- | Check if a meld is a pon
@@ -166,29 +166,28 @@ form3Melds hand@(tile : tiles) =
             return [tile, tile2, tile3]
 
         possible_melds =
-            (form3Melds $ tail hand)
-                ++ ( concat $ do
+            form3Melds (tail hand)
+                ++ concat
+                    ( do
                         triple@(tile1 : tile2 : tile3 : _) <- triples
                         let nextMelds = form3Melds (hand \\ triple)
-                        if (isChi tile1 tile2 tile3)
+                        if isChi tile1 tile2 tile3
                             then
-                                return $ map ((Chi tile1 tile2 tile3 False) :) nextMelds
+                                return $ map (Chi tile1 tile2 tile3 False :) nextMelds
                             else
-                                if (isPon tile1 tile2 tile3)
+                                if isPon tile1 tile2 tile3
                                     then
-                                        return $ map ((Pon tile1 False) :) nextMelds
+                                        return $ map (Pon tile1 False :) nextMelds
                                     else
                                         return []
-                   )
+                    )
      in
-        possible_melds
-            & sortBy (\x y -> compare (length x) (length y))
-            & groupBy (\x y -> (length x) == (length y))
-            & map (map sort)
-            & map sort
-            & map group
-            & map (map head)
-            & concat
+        concatMap
+            (((map head . group) . sort) . map sort)
+            ( possible_melds
+                & sortBy (\x y -> compare (length x) (length y))
+                & groupBy (\x y -> length x == length y)
+            )
 
 -- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
 formMelds :: Hand -> [[Meld]]
@@ -213,19 +212,19 @@ formComplete3Melds hand@(tile : tiles) =
             ( concat $ do
                 triple@(tile1 : tile2 : tile3 : _) <- triples
                 let nextMelds = form3Melds (hand \\ triple)
-                if (isChi tile1 tile2 tile3)
+                if isChi tile1 tile2 tile3
                     then
-                        return $ map ((Chi tile1 tile2 tile3 False) :) nextMelds
+                        return $ map (Chi tile1 tile2 tile3 False :) nextMelds
                     else
-                        if (isPon tile1 tile2 tile3)
+                        if isPon tile1 tile2 tile3
                             then
-                                return $ map ((Pon tile1 False) :) nextMelds
+                                return $ map (Pon tile1 False :) nextMelds
                             else
                                 return []
             )
      in
         possible_melds
-            & filter (\x -> (length x) * 3 == (length hand))
+            & filter (\x -> length x * 3 == length hand)
             & map sort
             & sort
             & group
@@ -241,15 +240,11 @@ formCompleteMelds hand = do
         then return kans_melds
         else []
 
--- if possible_melds == []
---     then formMelds (tail hand)
---     else possible_melds
-
 -- | Count the tiles in a list of melds
 meldsLength :: [Meld] -> Int
 meldsLength [] = 0
-meldsLength ((Kan _ _) : rest) = 4 + (meldsLength rest)
-meldsLength (_ : rest) = 3 + (meldsLength rest)
+meldsLength ((Kan _ _) : rest) = 4 + meldsLength rest
+meldsLength (_ : rest) = 3 + meldsLength rest
 
 -- | Reverse form melds. Concatenate a list of melds back into a hand.
 concatMelds :: [Meld] -> Hand
@@ -264,9 +259,8 @@ findPairs hand =
     hand
         & sort
         & group
-        & (filter (\list -> 2 <= (length list)))
-        & (map head)
-        & (map (\tile -> (Pair tile, hand \\ [tile, tile])))
+        & filter (\list -> 2 <= length list)
+        & map ((\tile -> (Pair tile, hand \\ [tile, tile])) . head)
 
 -- | Find all the ways of pulling kans out of a hand. In each case pair the set of kans with what remains of the hand
 findKans :: Hand -> [([Meld], Hand)]
@@ -274,12 +268,11 @@ findKans hand =
     hand
         & sort
         & group
-        & filter (\list -> 4 == (length list))
-        & map head
-        & map (\tile -> (Kan tile False))
+        & filter (\list -> 4 == length list)
+        & map ((`Kan` False) . head)
         & subsequences
         -- & tail
-        & map (\kans -> (kans, hand \\ (concat [tile & repeat & take 4 | Kan tile _ <- kans])))
+        & map (\kans -> (kans, hand \\ concat [replicate 4 tile | Kan tile _ <- kans]))
 
 -- interpretHand assumes the hand consists of a pair and 4 melds (chis pons or kans).
 -- An InterpretedHand can then be passed on to other functions to check for yakus.
@@ -300,11 +293,11 @@ interpretHand hand =
             return (pair, melds)
      in
         pairs_melds
-            & (filter (\(_, melds) -> (length hand) == 2 + (meldsLength melds)))
+            & filter (\(_, melds) -> length hand == 2 + meldsLength melds)
 
 -- | Show a full interpreted hand
 showInterpretedHand :: InterpretedHand -> String
-showInterpretedHand (pair, melds) = (show pair) : (map show melds) & intersperse ", " & concat
+showInterpretedHand (pair, melds) = show pair : map show melds & intercalate ", "
 
 -- | Ask which meld was opened by ron. Return modified melds with that meld opened.
 getRonMeld :: [Meld] -> IO [Meld]
@@ -316,7 +309,7 @@ getRonMeld melds = do
         then return melds
         else
             let index :: Int = input & read
-             in return $ (zip [0 ..] melds) & map (\(i, meld) -> if i == index then openMeld meld else meld)
+             in return $ zipWith (\i meld -> (if i == index then openMeld meld else meld)) [0 ..] melds
 
 {- | Ask which melds are open in a set of melds. Return modified melds with this data added. Opens the specified melds,
 | but if a meld is already open it stays that way. (This may change in the future)
@@ -326,5 +319,5 @@ getOpenMelds melds = do
     putStrLn "Which melds are open? (enter a string of indices, or leave blank if all closed): "
     sequence_ $ [("[" ++ show i ++ "]: " ++ (meld & show)) & putStrLn | (i :: Integer, meld) <- zip [0 ..] melds]
     input <- getLine
-    let indices :: [Int] = input & map return & (map read)
-    return $ (zip [0 ..] melds) & map (\(i, meld) -> if i `elem` indices then openMeld meld else meld)
+    let indices :: [Int] = map (read . return) input
+    return $ zipWith (\i meld -> (if i `elem` indices then openMeld meld else meld)) [0 ..] melds

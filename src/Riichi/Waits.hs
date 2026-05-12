@@ -22,7 +22,7 @@ getWaits hand =
             let pairs = findPairs hand
                 sevenPairsWait =
                     ( if length pairs == 6
-                        then case (hand & sort & group & filter (\gp -> 1 == length gp)) of
+                        then case hand & sort & group & filter (\gp -> 1 == length gp) of
                             [[tile]] -> [tile]
                             _ -> []
                         else []
@@ -31,7 +31,7 @@ getWaits hand =
                 orphansWaits =
                     if length hand == 13
                         then do
-                            let orphans = (mkHand "1p 9p 1s 9s 1m 9m N E S W r g w")
+                            let orphans = mkHand "1p 9p 1s 9s 1m 9m N E S W r g w"
                             let difference = hand \\ orphans
                             case difference of
                                 [] -> orphans
@@ -42,7 +42,7 @@ getWaits hand =
                 -- If we have four melds already, a single remaning tile can wait for a pair
                 possibleMelds = formMelds hand
                 fourMelds = possibleMelds & filter (\melds -> length melds == 4)
-                fourMeldsWaits = fourMelds & map (concatMelds) & map (hand \\) & filter (\diff -> length diff == 1) & concat
+                fourMeldsWaits = map ((hand \\) . concatMelds) fourMelds & filter (\diff -> length diff == 1) & concat
                 -- Finally, we might be waiting with three melds and a pair
                 threeMeldWaits = concat $ do
                     (pair, hand') <- findPairs hand
@@ -50,7 +50,7 @@ getWaits hand =
                     if length melds /= 3
                         then return []
                         else
-                            let diff = hand' \\ (concatMelds melds)
+                            let diff = hand' \\ concatMelds melds
                              in if length diff /= 2
                                     then return []
                                     else let [a, b] = diff in return (meldWait a b)

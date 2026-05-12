@@ -19,11 +19,11 @@ main = do
     let list = ['1' .. '9'] ++ "NESWrgw"
     case args of
         [] -> putStrLn "No arguments supplied. Run riichi --help for more info."
-        (arg : [])
-            | (arg `elem` ["--help", "-h", "help"]) -> putStrLn helpString
-            | (arg `elem` ["--version", "-v", "version"]) -> putStrLn $ "riichi-scoring: " ++ showVersion version
-            | (arg `elem` ["yaku", "waits", "score"]) -> putStrLn "Missing hand"
-            | (head arg) `elem` list -> displayHandYaku $ mkHand arg
+        [arg]
+            | arg `elem` ["--help", "-h", "help"] -> putStrLn helpString
+            | arg `elem` ["--version", "-v", "version"] -> putStrLn $ "riichi-scoring: " ++ showVersion version
+            | arg `elem` ["yaku", "waits", "score"] -> putStrLn "Missing hand"
+            | head arg `elem` list -> displayHandYaku $ mkHand arg
             | otherwise -> putStrLn "Command not recognised"
         (arg1 : arg2 : _)
             | arg1 == "yaku" -> displayHandYaku $ mkHand arg2

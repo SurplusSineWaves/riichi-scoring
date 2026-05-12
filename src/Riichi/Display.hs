@@ -7,10 +7,10 @@ Maintainer  : surplussinewaves@gmail.com
 module Riichi.Display where
 
 import ColourStrings
-import Control.Monad (forM)
+import Control.Monad (forM, forM_, when)
 import Control.Monad.Trans
 import Data.Function
-import Data.List (intersperse, sort)
+import Data.List (intercalate, intersperse, sort)
 import Data.Monoid (getSum)
 import Riichi.Context
 import Riichi.Meld
@@ -30,64 +30,59 @@ displayHandYaku hand = do
             putStrLn "🀀 🀁 🀂 🀃 "
             putStrLn "Assuming East round and East seat."
             let num = length ihs
-            if num >= 1
-                then do
-                    if num == 1
-                        then putStrLn $ "Found 1 way to interpret this hand:\n"
-                        else putStrLn $ "Found " ++ show num ++ " ways to interpret this hand:\n"
-                    _ <- forM ihs $ \ih -> do
-                        let handString = showInterpretedHand ih
-                        let handContext = getMinimalHandContext hand False
-                        maybeYakumanContext <- mkYakumanContext hand (Just ih) (Just True)
-                        let context = case maybeYakumanContext of
-                                Nothing ->
-                                    let yakuContext = mkYakuContext hand (Just ih) handContext
-                                     in (Context (Just ih) handContext (Left yakuContext))
-                                Just yakumanContext -> (Context (Just ih) handContext (Right yakumanContext))
-                        let string = formContextString context
-                        let hanOrYakumans = getContextHansOrYakumans context
-                        case hanOrYakumans of
-                            Left (hanClosed, hanOpen) ->
-                                putStrLn $
-                                    handString
-                                        ++ "\n"
-                                        ++ string
-                                        ++ "\t\t"
-                                        ++ toGreen (show (getSum hanClosed))
-                                        ++ " Han total if closed, "
-                                        ++ toGreen (show (getSum hanOpen))
-                                        ++ " if open\n"
-                            Right yakumans -> putStrLn $ handString ++ "\n" ++ string ++ "\t\t" ++ toGreen (show yakumans) ++ " Yakuman total\n"
-                    return ()
-                else return ()
-            if (chiitoitsu hand) || (thirteenOrphans hand)
+            when (num >= 1) $ do
+                if num == 1
+                    then putStrLn "Found 1 way to interpret this hand:\n"
+                    else putStrLn $ "Found " ++ show num ++ " ways to interpret this hand:\n"
+                forM_ ihs $ \ih -> do
+                    let handString = showInterpretedHand ih
+                    let handContext = getMinimalHandContext hand False
+                    maybeYakumanContext <- mkYakumanContext hand (Just ih) (Just True)
+                    let context = case maybeYakumanContext of
+                            Nothing ->
+                                let yakuContext = mkYakuContext hand (Just ih) handContext
+                                 in Context (Just ih) handContext (Left yakuContext)
+                            Just yakumanContext -> Context (Just ih) handContext (Right yakumanContext)
+                    let string = formContextString context
+                    let hanOrYakumans = getContextHansOrYakumans context
+                    case hanOrYakumans of
+                        Left (hanClosed, hanOpen) ->
+                            putStrLn $
+                                handString
+                                    ++ "\n"
+                                    ++ string
+                                    ++ "\t\t"
+                                    ++ toGreen (show (getSum hanClosed))
+                                    ++ " Han total if closed, "
+                                    ++ toGreen (show (getSum hanOpen))
+                                    ++ " if open\n"
+                        Right yakumans -> putStrLn $ handString ++ "\n" ++ string ++ "\t\t" ++ toGreen (show yakumans) ++ " Yakuman total\n"
+            if chiitoitsu hand || thirteenOrphans hand
                 then do
                     if num == 0
                         then putStrLn "This hand can be interpreted as:\n"
                         else putStrLn "This hand can also be interpreted as:\n"
-                    let handString = hand & sort & map show & intersperse ", " & concat
+                    let handString = intercalate ", " (hand & sort & map show)
                     let handContext = getMinimalHandContext hand True
                     maybeYakumanContext <- mkYakumanContext hand Nothing (Just True)
                     let context = case maybeYakumanContext of
                             Nothing ->
                                 let yakuContext = mkYakuContext hand Nothing handContext
-                                 in (Context Nothing handContext (Left yakuContext))
-                            Just yakumanContext -> (Context Nothing handContext (Right yakumanContext))
+                                 in Context Nothing handContext (Left yakuContext)
+                            Just yakumanContext -> Context Nothing handContext (Right yakumanContext)
                     let string = formContextString context
                     let hanOrYakumans = getContextHanOrYakumans context
                     putStrLn $ case hanOrYakumans of
                         Left han -> handString ++ "\n" ++ string ++ "\t\t" ++ toGreen (show (getSum han)) ++ " Han total, closed by definition\n"
                         Right yakumans -> handString ++ "\n" ++ string ++ "\t\t" ++ toGreen (show yakumans) ++ " Yakuman total\n"
                 else
-                    if num == 0
-                        then putStrLn $ toRed "This hand is not valid"
-                        else return ()
+                    Control.Monad.when (num == 0) $ putStrLn $ toRed "This hand is not valid"
 
 -- | Implements the "waits" command for the CLI.
 displayHandWaits :: Hand -> IO ()
 displayHandWaits hand = do
     let waits = getWaits hand
-    putStrLn $ "Waits are: " ++ (waits & map show & intersperse ", " & concat)
+    putStrLn $ "Waits are: " ++ intercalate ", " (waits & map show)
 
 -- | Implements the "score" command for the CLI.
 displayHandScore :: Hand -> IO ()
@@ -102,7 +97,7 @@ displayHandScore hand = do
             let hanOrYakumans = getContextHanOrYakumans context
             case hanOrYakumans of
                 Left han ->
-                    if getContextDora context == (getSum han)
+                    if getContextDora context == getSum han
                         then
                             putStrLn $ "\n\t" ++ toRed "Hand has no yaku!"
                         else do
@@ -134,7 +129,7 @@ displayHandScore hand = do
                     putStrLn $
                         string
                             ++ "\t\t"
-                            ++ toGreen (show (yakumans))
+                            ++ toGreen (show yakumans)
                             ++ " Yakuman total\n"
                             ++ "\n\t"
                             ++ toGreen (show (yakumans * 48000))

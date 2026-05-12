@@ -7,6 +7,7 @@ Maintainer  : surplussinewaves@gmail.com
 module Riichi.Context where
 
 import Control.Exception (handle)
+import Control.Monad (when)
 import Data.Function ((&))
 import Riichi.Meld
 import Riichi.Tile
@@ -114,7 +115,7 @@ data WaitContext = WaitContext
     }
 
 -- | Ask about the waits, and return a wait context.
-askWaitContext :: IO (WaitContext)
+askWaitContext :: IO WaitContext
 askWaitContext = do
     ryanmanWait <- askYesNo "Did the hand have an open wait? [y/n]: "
     shanponWait <-
@@ -128,7 +129,7 @@ data WindContext = WindContext
     {seatWind :: Wind, roundWind :: Wind}
 
 -- | Ask about round and seat winds, and return a wind context.
-askWindContext :: IO (WindContext)
+askWindContext :: IO WindContext
 askWindContext = do
     putStrLn "Input round and seat wind: "
     (Honour (Wind r) _) : (Honour (Wind s) _) : _ <- mkHand <$> getLine
@@ -139,7 +140,7 @@ data RiichiContext = RiichiContext
     {isRiichi :: Bool, isIppatsu :: Bool}
 
 -- | Ask about the hand being riichi, return a riichi context.
-askRiichiContext :: IO (RiichiContext)
+askRiichiContext :: IO RiichiContext
 askRiichiContext = do
     riichi <- askYesNo "Riichi? [y/n]: "
     ippatsu <-
@@ -208,13 +209,13 @@ mkYakuContext hand (Just ih) handContext =
             , isSankantsu = sankantsu ih
             , isShousangen = shousangen ih
             , isChinitsu = fullFlush
-            , isHonitsu = halfFlush && (not fullFlush)
+            , isHonitsu = halfFlush && not fullFlush
             , -- Should these check for closed, or do we want to include them anyway?
               isRyanpeikou = twicePure && closure
-            , isIipeikou = singlePure && (not twicePure) && closure
+            , isIipeikou = singlePure && not twicePure && closure
             , isJunchan = fullyOutside
-            , isChanta = halfOutside && (not fullyOutside) && (not terminalsHonours)
-            , isHonroutou = terminalsHonours && (not fullyOutside)
+            , isChanta = halfOutside && not fullyOutside && not terminalsHonours
+            , isHonroutou = terminalsHonours && not fullyOutside
             , yakuHandContext = handContext
             , isMenzenTsumo = tsumo && closure
             , isChiitoitsu = False
@@ -241,7 +242,7 @@ mkYakuContext hand Nothing handContext@HandContext{isTsumo = tsumo} =
             , isSankantsu = False
             , isShousangen = False
             , isChinitsu = fullFlush
-            , isHonitsu = halfFlush && (not fullFlush)
+            , isHonitsu = halfFlush && not fullFlush
             , -- Should these check for closed, or do we want to include them anyway?
               isRyanpeikou = False
             , isIipeikou = False
@@ -282,7 +283,7 @@ mkYakumanContext hand (Just ih) maybeClosure =
                 -- are all the melds. If the hand is closed, a meld could still be open so we need to ask.
                 then case maybeClosure of
                     Just False -> return False
-                    otherwise -> askYesNo "Are the four triplets all concealed? [y/n]: "
+                    _ -> askYesNo "Are the four triplets all concealed? [y/n]: "
                 else return False
         let isSuuka = suukantsu ih
         let isDaisa = daisangen ih
@@ -315,14 +316,14 @@ mkYakumanContext hand (Just ih) maybeClosure =
                             , isKokushiMusou = False
                             }
             else
-                return $ Nothing
+                return Nothing
 mkYakumanContext hand Nothing _ =
     let
         isTsuui = tsuuiisou hand
         isChinr = chinroutou hand
         isRyuui = ryuuiisou hand
      in
-        if (or [isTsuui, isChinr, isRyuui]) && chiitoitsu hand
+        if (isTsuui || isChinr || isRyuui) && chiitoitsu hand
             then
                 return $
                     Just
@@ -377,7 +378,7 @@ mkContext hand = do
                 return Nothing
             else do
                 let ihs = interpretHand hand
-                if length ihs == 0
+                if null ihs
                     then undefined
                     else do
                         ih <-
@@ -400,20 +401,17 @@ mkContext hand = do
         Nothing -> do
             putStrLn "Input dora (or leave blank):"
             dora <- mkHand <$> getLine
-            if dora /= []
-                then
-                    putStrLn ""
-                else return ()
+            when (dora /= []) $ putStrLn ""
 
             let hand' = addDora dora hand
             -- I suppose this will calculate thirteenOrphans hand' all over again, slight inneficiency in that sense
             -- as we are checking it twice... Except... Laziness probably saves us from that!
             let handContext = getMinimalHandContext hand' sevenPairs
             handContext' <- do
-                let hasWind = hand' & (filter isWind) & (/= [])
+                let hasWind = hand' & filter isWind & (/= [])
                 if not sevenPairs
-                    then pure handContext >>= (if hasWind then addWindContext else pure) >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
-                    else pure handContext >>= addRiichiContext >>= addTsumoContext
+                    then (if hasWind then addWindContext else pure) handContext >>= addRiichiContext >>= addTsumoContext >>= addWaitContext
+                    else addRiichiContext handContext >>= addTsumoContext
             (maybeIh', handContext'') <- addClosedContext maybeIh handContext'
             let yakuContext = mkYakuContext hand' maybeIh' handContext''
             return $ Context maybeIh' handContext'' (Left yakuContext)

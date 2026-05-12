@@ -1,3 +1,5 @@
+{- HLINT ignore "Redundant bracket" -}
+
 {- |
 Module      : Riichi.Yaku
 Description : Methods for detecting the various yaku conditions
@@ -21,7 +23,7 @@ import Riichi.Tile
 
 -- | Check a hand for tanyao, aka all simples
 tanyao :: Hand -> Bool
-tanyao hand = hand & (map isSimple) & and
+tanyao = all isSimple
 
 {- | Check if a hand is composed entirely of unique pairs.
 Note this doesn't check the hand has the right size to be seven pairs.
@@ -39,13 +41,13 @@ thirteenOrphans hand =
     (length hand == 14)
         && ( Set.fromList hand
                 == Set.fromList
-                    [ (Honour $ Dragon $ Red) 0
-                    , (Honour $ Dragon $ White) 0
-                    , (Honour $ Dragon $ Green) 0
-                    , (Honour $ Wind $ North) 0
-                    , (Honour $ Wind $ South) 0
-                    , (Honour $ Wind $ East) 0
-                    , (Honour $ Wind $ West) 0
+                    [ (Honour $ Dragon Red) 0
+                    , (Honour $ Dragon White) 0
+                    , (Honour $ Dragon Green) 0
+                    , (Honour $ Wind North) 0
+                    , (Honour $ Wind South) 0
+                    , (Honour $ Wind East) 0
+                    , (Honour $ Wind West) 0
                     , (Numeric Pin 1) 0
                     , (Numeric Pin 9) 0
                     , (Numeric Man 1) 0
@@ -62,9 +64,9 @@ yakuhaiDragons (_, melds) =
         & ( filter
                 ( \meld ->
                     meld
-                        `elem` [ Pon ((Honour $ Dragon $ Red) 0) False
-                               , Pon ((Honour $ Dragon $ Green) 0) False
-                               , Pon ((Honour $ Dragon $ White) 0) False
+                        `elem` [ Pon ((Honour $ Dragon Red) 0) False
+                               , Pon ((Honour $ Dragon Green) 0) False
+                               , Pon ((Honour $ Dragon White) 0) False
                                ]
                 )
           )
@@ -84,31 +86,31 @@ checkPonOrKan t ih = (checkPon t ih) || (checkKan t ih)
 
 -- | Check for the presence of a white dragon triplet in an interpreted hand.
 haku :: InterpretedHand -> Bool
-haku = checkPonOrKan ((Honour $ Dragon $ White) 0)
+haku = checkPonOrKan ((Honour $ Dragon White) 0)
 
 -- | Check for the presence of a green dragon triplet in an interpreted hand.
 hatsu :: InterpretedHand -> Bool
-hatsu = checkPonOrKan ((Honour $ Dragon $ Green) 0)
+hatsu = checkPonOrKan ((Honour $ Dragon Green) 0)
 
 -- | Check for the presence of a red dragon triplet in an interpreted hand.
 chun :: InterpretedHand -> Bool
-chun = checkPonOrKan ((Honour $ Dragon $ Red) 0)
+chun = checkPonOrKan ((Honour $ Dragon Red) 0)
 
 -- | Check for the presence of a north wind triplet in an interpreted hand.
 checkNorth :: InterpretedHand -> Bool
-checkNorth = checkPonOrKan ((Honour $ Wind $ North) 0)
+checkNorth = checkPonOrKan ((Honour $ Wind North) 0)
 
 -- | Check for the presence of a east wind triplet in an interpreted hand.
 checkEast :: InterpretedHand -> Bool
-checkEast = checkPonOrKan ((Honour $ Wind $ East) 0)
+checkEast = checkPonOrKan ((Honour $ Wind East) 0)
 
 -- | Check for the presence of a south wind triplet in an interpreted hand.
 checkSouth :: InterpretedHand -> Bool
-checkSouth = checkPonOrKan ((Honour $ Wind $ South) 0)
+checkSouth = checkPonOrKan ((Honour $ Wind South) 0)
 
 -- | Check for the presence of a west wind triplet in an interpreted hand.
 checkWest :: InterpretedHand -> Bool
-checkWest = checkPonOrKan ((Honour $ Wind $ West) 0)
+checkWest = checkPonOrKan ((Honour $ Wind West) 0)
 
 -- | Check for the presence of a given wind triplet in an interpreted hand.
 checkWind :: Wind -> InterpretedHand -> Bool
@@ -160,7 +162,7 @@ honitsu hand = hand & map getTileSuit & lefts & allEqual
 
 -- | Check if a hand is all triplets
 toitoi :: InterpretedHand -> Bool
-toitoi (_, melds) = melds & (map (\meld -> meldIsPon meld || meldIsKan meld)) & and
+toitoi (_, melds) = all (\meld -> meldIsPon meld || meldIsKan meld) melds
 
 -- | Check if a hand has 1-9 in a single suit
 ittsuu :: InterpretedHand -> Bool
@@ -246,33 +248,33 @@ ryanpeikou (_, melds) = melds & filter meldIsChi & sort & group & map length & f
 
 -- | Check for half outside hand
 chanta :: InterpretedHand -> Bool
-chanta (Pair tile, melds) = (melds & map getMeldBase & lefts & filter (\x -> x /= 1 && x /= 7)) == [] && (not $ isSimple tile)
+chanta (Pair tile, melds) = not (any (\x -> x /= 1 && x /= 7) (melds & map getMeldBase & lefts)) && not (isSimple tile)
 
 -- | Check for fully outside hand (chanta + no honnours)
 junchan :: InterpretedHand -> Bool
-junchan ih@(Pair tile, melds) = (isNumeric tile) && (melds & map getMeldBase & rights) == [] && (chanta ih)
+junchan ih@(Pair tile, melds) = (isNumeric tile) && null (melds & map getMeldBase & rights) && (chanta ih)
 
 -- | Check for all terminals and honours
 honroutou :: Hand -> Bool
-honroutou hand = hand & map (\tile -> isHonour tile || isTerminal tile) & and
+honroutou = all (\tile -> isHonour tile || isTerminal tile)
 
 {- | Check for all honours. Yakuman.
 Does not check that the hand is valid to begin with.
 -}
 tsuuiisou :: Hand -> Bool
-tsuuiisou hand = hand & map isHonour & and
+tsuuiisou = all isHonour
 
 {- | Check for all terminals. Yakuman.
 Does not check that the hand is valid to begin with.
 -}
 chinroutou :: Hand -> Bool
-chinroutou hand = hand & map isTerminal & and
+chinroutou = all isTerminal
 
 {- | Check for all green. Yakuman.
 Does not check that the hand is valid to begin with.
 -}
 ryuuiisou :: Hand -> Bool
-ryuuiisou hand = hand & map isGreen & and
+ryuuiisou = all isGreen
   where
     isGreen (Numeric Sou v _) = (v `elem` [2, 3, 4, 6, 8])
     isGreen (Honour (Dragon Green) _) = True
@@ -299,9 +301,9 @@ suuankou (_, melds) = (melds & filter (not . meldIsChi) & filter (meldIsClosed) 
 -- | Check for pinfu. Takes the hand, the seat wind, round wind, whether the wait was ryanman, and whether it is closed (in that order).
 pinfu :: InterpretedHand -> Wind -> Wind -> Bool -> Bool -> Bool
 pinfu (Pair tile, melds) seatWind roundWind ryanmanWait closedHand =
-    (melds & filter (not . meldIsChi)) == []
+    (all meldIsChi melds)
         && closedHand
-        && (not $ isDragon tile)
+        && not (isDragon tile)
         && (tile /= (Honour (Wind seatWind) 0))
         && (tile /= (Honour (Wind roundWind) 0))
         && ryanmanWait
