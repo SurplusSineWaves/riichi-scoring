@@ -3,58 +3,63 @@
 See git repo for more detailed commit information.
 
 ## 0.1.0.0
-First functional prototype.
+- First functional prototype.
 
 ## 0.1.0.1
-Dependency versions reworked.
+- Dependency versions reworked.
 
 ## 0.2.0.0
-Help messages improved. Module structure refactored. Documentation begun.
+- Help messages improved. Module structure refactored. Documentation begun.
 
 ## 0.2.0.1
-Revised cabal version in attempt to fix build error on Hackage. Build works
-locally, suspect the problem is a quirk of Hackage build system.
-Added some more documentation.
+- Revised cabal version in attempt to fix build error on Hackage. Build works
+- locally, suspect the problem is a quirk of Hackage build system.
+- Added some more documentation.
 
 ## 0.2.0.2
-Internal library now unnamed. Hoping this fixes Hackage build fail.
+- Internal library now unnamed. Hoping this fixes Hackage build fail.
 
 ## 0.2.0.3
-Added docs for yaku functions.
-Reworked seven pairs detection to ensure hand has 14 tiles.
-9 gates now checks that the hand is closed.
+- Added docs for yaku functions.
+- Reworked seven pairs detection to ensure hand has 14 tiles.
+- 9 gates now checks that the hand is closed.
 
 ## 0.3.0.0
-Fixed error in scoring triple triplets, was previously scored as 1 han open.
-Implemented new backend for scoring and yaku detection via "context" based
+- Fixed error in scoring triple triplets, was previously scored as 1 han open.
+- Implemented new backend for scoring and yaku detection via "context" based
 approach, defined in new Context submodule. This helps simplify function
 signatures for operations that need many pieces of information besides just the
 superficial composition of a hand.
 
 ## 0.3.1.0
-Now only ask for dora after we know the hand is not a yakuman, as part of the
+- Now only ask for dora after we know the hand is not a yakuman, as part of the
 mkContext function (previously handled dora in displayHandScore).
-Four concealed triplets now asks about concealment. It wasn't doing this before,
+- Four concealed triplets now asks about concealment. It wasn't doing this before,
 a bug introduced by the refactor, since mkYakumanContext intentionally gets less
 information than mkYakuContext since generally it needs less.
-Now only ask for wind context if we see a wind tile in the hand. Note even a
+- Now only ask for wind context if we see a wind tile in the hand. Note even a
 wind pair could matter - it won't affect most yaku but affects Fu.
 Speaking of - 
     NOTE: Seat+Round wind pair counts as a yakuhai pair and awards
     2+2=4 Fu. Some rulesets would only award 2 Fu.
 
 ## 0.4.0.0
-Extended documentation. Old getFu replaced with new one (previously _getFu).
-Removed old getYaku function
+- Extended documentation. Old getFu replaced with new one (previously _getFu).
+- Removed old getYaku function
 
 ## 0.4.0.1
-Fixed catastrophic failure affecting waits command.
+- Fixed catastrophic failure affecting waits command.
 
 ## 0.4.1.0
-Fixed further problems with waits command. Previously, partial hands with kans
+- Fixed further problems with waits command. Previously, partial hands with kans
 were not considered. To fix this and also streamline the internal API, formMelds
 now returns all ways of pulling melds out of a hand, INCLUDING KANS. Previously
 the caller had to handle kans themself. This makes the interpretHand function
 simpler, and fixes getWaits.
 
-
+## 0.5.0.0
+- Sub 5-han mangans are now named correctly
+- Reworked meld forming functions. Can now get all ways of pulling out melds, or
+  just all ways of pulling out a complete set of melds (when the hand is
+  complete to begin with)
+- Internal code refactors according to hlint
