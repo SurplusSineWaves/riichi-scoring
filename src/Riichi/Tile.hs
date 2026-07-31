@@ -131,6 +131,21 @@ isHonour :: Tile -> Bool
 isHonour (Honour _ _) = True
 isHonour _ = False
 
+-- | Check if a tile is in the Souzu suit
+isSou :: Tile -> Bool
+isSou (Numeric Sou _ _) = True
+isSou _ = False
+
+-- | Check if a tile is in the Pinzu suit
+isPin :: Tile -> Bool
+isPin (Numeric Pin _ _) = True
+isPin _ = False
+
+-- | Check if a tile is in the Manzu suit
+isMan :: Tile -> Bool
+isMan (Numeric Man _ _) = True
+isMan _ = False
+
 -- | Check if a tile is numeric
 isNumeric :: Tile -> Bool
 isNumeric = not . isHonour

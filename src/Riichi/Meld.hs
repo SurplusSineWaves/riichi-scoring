@@ -152,6 +152,23 @@ getPairSuit :: Pair -> Either Suit Honour
 getPairSuit (Pair (Numeric suit _ _)) = Left suit
 getPairSuit (Pair (Honour honour _)) = Right honour
 
+{- | Some functions can be evaluated on each suit separately. In particular, when forming melds, different
+| suits don't interact so we can speed up recursive algorithms by first splitting the hand by suits.
+-}
+splitAcrossSuits :: (Hand -> [[Meld]]) -> (Hand -> [[Meld]])
+splitAcrossSuits f hand = do
+    let hs = f (filter isHonour hand)
+    let ss = f (filter isSou hand)
+    let ps = f (filter isPin hand)
+    let ms = f (filter isMan hand)
+    h <- hs
+    s <- ss
+    p <- ps
+    m <- ms
+    return (m ++ p ++ s ++ h)
+
+-- f (filter isHonour hand) ++ f (filter isSou hand) ++ f (filter isPin hand) ++ f (filter isMan hand)
+
 -- | Given a hand, return all the possible ways of pulling out chis and pons, in increasing order of length
 form3Melds :: Hand -> [[Meld]]
 form3Melds [] = [[]]
@@ -193,7 +210,7 @@ form3Melds hand@(tile : tiles) =
 formMelds :: Hand -> [[Meld]]
 formMelds hand = do
     (kans, hand') <- findKans hand
-    melds <- form3Melds hand'
+    melds <- splitAcrossSuits form3Melds hand'
     return $ kans ++ melds
 
 -- | Given a hand, return all the possible ways of spliting the entire hand into chis, pons and kans
@@ -234,7 +251,7 @@ formComplete3Melds hand@(tile : tiles) =
 formCompleteMelds :: Hand -> [[Meld]]
 formCompleteMelds hand = do
     (kans, hand') <- findKans hand
-    melds <- formComplete3Melds hand'
+    melds <- splitAcrossSuits formComplete3Melds hand'
     let kans_melds = kans ++ melds
     if length kans_melds == 4
         then return kans_melds
