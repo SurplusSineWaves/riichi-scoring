@@ -56,3 +56,7 @@ Target:
     interpretation we are looking at already. Thus can be more specific about
     the waits and what sort of wait it is. (Recall that some hands might have an
     open wait in one interpretation, and something else in another)
+
+Add logic for Shanten calculation, and support for basic "tile efficiency"
+strategy calculations (given a hand, which discard leaves the most chances to
+reduce shanten on the next draw?).
