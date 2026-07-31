@@ -63,3 +63,6 @@ simpler, and fixes getWaits.
   just all ways of pulling out a complete set of melds (when the hand is
   complete to begin with)
 - Internal code refactors according to hlint
+
+## 0.5.1.0
+- Form melds now does divide and conquer across different suits.
