@@ -42,7 +42,7 @@ getDora (Honour _ d) = d
 getDora (Numeric _ _ d) = d
 
 -- | The data for a pair is just a tile
-newtype Pair = Pair Tile deriving (Show, Eq)
+newtype Pair = Pair Tile deriving (Show, Eq, Ord)
 
 -- | A meld is a chi, pon, or kan
 data Meld = Chi Tile Tile Tile Open | Pon Tile Open | Kan Tile Open deriving (Ord)
@@ -155,7 +155,7 @@ getPairSuit (Pair (Honour honour _)) = Right honour
 {- | Some functions can be evaluated on each suit separately. In particular, when forming melds, different
 | suits don't interact so we can speed up recursive algorithms by first splitting the hand by suits.
 -}
-splitAcrossSuits :: (Hand -> [[Meld]]) -> (Hand -> [[Meld]])
+splitAcrossSuits :: (Hand -> [[a]]) -> (Hand -> [[a]])
 splitAcrossSuits f hand = do
     let hs = f (filter isHonour hand)
     let ss = f (filter isSou hand)
