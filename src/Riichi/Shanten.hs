@@ -18,7 +18,18 @@ data Taatsu = Taatsu Tile Tile deriving (Show, Eq, Ord)
 type Partial = Either Taatsu Pair
 
 getShanten :: Hand -> Int
-getShanten hand = minimum $ do
+getShanten hand
+    | length hand `elem` [13, 14] = if 0 `elem` list then 0 else minimum list
+    | otherwise = basicShanten hand
+  where
+    -- Postpone basic shanten calculation until after we know the other two (which are faster) are not 0
+    p = pairsShanten hand
+    o = orphansShanten hand
+    b = basicShanten hand
+    list = [p, o, b]
+
+basicShanten :: Hand -> Int
+basicShanten hand = minimum $ do
     let meldss = formMelds hand
     melds <- meldss
     let partialss = formPartials (hand \\ concatMelds melds)
@@ -26,6 +37,20 @@ getShanten hand = minimum $ do
     let m = length melds
     let (t, p) = countTatsuPairs partials
     return $ 8 - (2 * m) - min (t + p) (4 - m) - (if p >= 1 && (m + t + p >= 5) then 1 else 0)
+
+pairsShanten :: Hand -> Int
+pairsShanten hand = 6 - numPairs + max 0 (7 - uniqueTiles)
+  where
+    numPairs = length $ findPairs hand
+    uniqueTiles = length $ map head $ group $ sort hand
+
+orphansShanten :: Hand -> Int
+orphansShanten hand = 13 - uniqueOrphans - pairs
+  where
+    orphans = filter (not . isSimple) hand
+    groupedOrphans = group $ sort orphans
+    uniqueOrphans = length $ map head groupedOrphans
+    pairs = if any ((>= 2) . length) groupedOrphans then 1 else 0
 
 countTatsuPairs :: [Partial] -> (Int, Int)
 countTatsuPairs partials = (numTatsu, numPairs)

@@ -141,4 +141,8 @@ displayHandScore hand = do
 displayHandShanten :: Hand -> IO ()
 displayHandShanten hand = do
     let shanten = getShanten hand
-    putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten")
+    case shanten of
+        -1 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Complete)"
+        0 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Tenpai)"
+        1 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Iishanten)"
+        _ -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten")
