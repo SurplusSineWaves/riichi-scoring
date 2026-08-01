@@ -68,4 +68,4 @@ simpler, and fixes getWaits.
 - Form melds now does divide and conquer across different suits.
 
 ## 0.6.0.0
-- (TODO) Shanten calculation
+- Shanten calculation
