@@ -206,7 +206,7 @@ form3Melds hand@(tile : tiles) =
                 & groupBy (\x y -> length x == length y)
             )
 
--- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
+-- | Given a hand, return all the possible ways of interpreting it as a sequence of melds, including those that do not use all tiles.
 formMelds :: Hand -> [[Meld]]
 formMelds hand = do
     (kans, hand') <- findKans hand
@@ -247,7 +247,9 @@ formComplete3Melds hand@(tile : tiles) =
             & group
             & map head
 
--- | Given a hand, return all the possible ways of interpreting it as a sequence of melds
+{- | Given a hand, return all the possible ways of interpreting it as a sequence of melds which includes all tiles.
+| In other words, formCompleteMelds always returns a strict subset of what formMelds returns.
+-}
 formCompleteMelds :: Hand -> [[Meld]]
 formCompleteMelds hand = do
     (kans, hand') <- findKans hand
