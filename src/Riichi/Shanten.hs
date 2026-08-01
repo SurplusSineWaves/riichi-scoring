@@ -32,7 +32,7 @@ basicShanten :: Hand -> Int
 basicShanten hand = minimum $ do
     let meldss = formMelds hand
     melds <- meldss
-    let partialss = formPartials (hand \\ concatMelds melds)
+    let partialss = splitAcrossSuits formPartials (hand \\ concatMelds melds)
     partials <- partialss
     let m = length melds
     let (t, p) = countTatsuPairs partials
