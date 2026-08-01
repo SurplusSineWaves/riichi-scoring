@@ -6,6 +6,7 @@ Maintainer  : surplussinewaves@gmail.com
 -}
 module Riichi.Shanten where
 
+import Data.Either (lefts)
 import Data.Function ((&))
 import Data.List
 import Data.Maybe
@@ -17,24 +18,42 @@ data Taatsu = Taatsu Tile Tile deriving (Show, Eq, Ord)
 type Partial = Either Taatsu Pair
 
 shanten :: Hand -> Int
-shanten hand = undefined
+shanten hand = minimum $ do
+    let meldss = formMelds hand
+    melds <- meldss
+    let partialss = formPartials (hand \\ concatMelds melds)
+    partials <- partialss
+    let m = length melds
+    let (t, p) = countTatsuPairs partials
+    return $ 8 - (2 * m) - min (t + p) (4 - m) - (if p >= 1 && (m + t + p >= 5) then 1 else 0)
+
+countTatsuPairs :: [Partial] -> (Int, Int)
+countTatsuPairs partials = (numTatsu, numPairs)
+  where
+    num = length partials
+    numTatsu = length $ lefts partials
+    numPairs = num - numTatsu
 
 formPartials :: Hand -> [[Partial]]
-formPartials hand = do
-    let partials = formPartials' hand
-    partials
-        & sort
-        & group
-        & map head
-        & sortBy (\x y -> compare (length x) (length y))
-  where
-    formPartials' [] = [[]]
-    formPartials' [_] = [[]]
-    formPartials' hand@(tile1 : hand') = do
-        tile2 <- hand'
-        partial <- maybeToList $ mkPartial tile1 tile2
-        let nextPartials = formPartials' (hand' \\ [tile2])
-        formPartials' (tail hand) ++ map (partial :) nextPartials
+formPartials [] = [[]]
+formPartials [_] = [[]]
+formPartials hand@(tile1 : hand') =
+    let
+        -- Get all sets of 2 tiles, including the first tile
+        doubles = do
+            tile2 <- hand'
+            return [tile1, tile2]
+        partials =
+            formPartials (tail hand) ++ do
+                [tile1, tile2] <- doubles
+                partial <- maybeToList $ mkPartial tile1 tile2
+                map (partial :) $ formPartials (hand' \\ [tile2])
+     in
+        partials
+            & sortBy (\x y -> compare (length x) (length y))
+            & map sort
+            & group
+            & map head
 
 mkPartial :: Tile -> Tile -> Maybe Partial
 mkPartial tile1@(Numeric suit1 val1 _) tile2@(Numeric suit2 val2 _)
@@ -50,18 +69,3 @@ mkPartial tile1@(Honour _ _) tile2@(Honour _ _) =
         then Just $ Right $ Pair tile1
         else Nothing
 mkPartial _ _ = Nothing
-
--- mkPartial tile1 tile2
---     | tile1 == tile2 = Just $ Right $ Pair tile1
---     | isHonour tile1 || isHonour tile2 = Nothing
---     | otherwise = undefined
-
--- if tile1 == tile2
---     then
---         Just $ Right $ Pair tile1
---     else
---         if isHonour tile1 || isHonour tile2
---             then
---                 Nothing
---             else
---                 undefined
