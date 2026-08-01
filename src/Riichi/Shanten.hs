@@ -17,8 +17,8 @@ data Taatsu = Taatsu Tile Tile deriving (Show, Eq, Ord)
 
 type Partial = Either Taatsu Pair
 
-shanten :: Hand -> Int
-shanten hand = minimum $ do
+getShanten :: Hand -> Int
+getShanten hand = minimum $ do
     let meldss = formMelds hand
     melds <- meldss
     let partialss = formPartials (hand \\ concatMelds melds)

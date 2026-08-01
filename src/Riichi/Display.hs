@@ -15,6 +15,7 @@ import Data.Monoid (getSum)
 import Riichi.Context
 import Riichi.Meld
 import Riichi.Scoring
+import Riichi.Shanten
 import Riichi.Tile
 import Riichi.Waits
 import Riichi.Yaku
@@ -136,3 +137,8 @@ displayHandScore hand = do
                             ++ " points for Dealer, "
                             ++ toGreen (show (yakumans * 32000))
                             ++ " points for Non-Dealer."
+
+displayHandShanten :: Hand -> IO ()
+displayHandShanten hand = do
+    let shanten = getShanten hand
+    putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten")
