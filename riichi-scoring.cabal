@@ -63,6 +63,7 @@ library
     Riichi.Display
     Riichi.Meld
     Riichi.Scoring
+    Riichi.Shanten
     Riichi.Tile
     Riichi.Waits
     Riichi.Yaku
