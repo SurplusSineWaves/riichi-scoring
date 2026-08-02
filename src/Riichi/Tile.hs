@@ -168,3 +168,42 @@ honourIsDragon _ = False
 -- | Check if an honour is a wind
 honourIsWind :: Honour -> Bool
 honourIsWind = not . honourIsDragon
+
+-- | Utility. Contains one of each tile (all with 0 dora)
+allTiles :: [Tile]
+allTiles =
+    [ Honour (Dragon Red) 0
+    , Honour (Dragon Green) 0
+    , Honour (Dragon White) 0
+    , Honour (Wind North) 0
+    , Honour (Wind East) 0
+    , Honour (Wind South) 0
+    , Honour (Wind West) 0
+    , Numeric Man 1 0
+    , Numeric Man 2 0
+    , Numeric Man 3 0
+    , Numeric Man 4 0
+    , Numeric Man 5 0
+    , Numeric Man 6 0
+    , Numeric Man 7 0
+    , Numeric Man 8 0
+    , Numeric Man 9 0
+    , Numeric Pin 1 0
+    , Numeric Pin 2 0
+    , Numeric Pin 3 0
+    , Numeric Pin 4 0
+    , Numeric Pin 5 0
+    , Numeric Pin 6 0
+    , Numeric Pin 7 0
+    , Numeric Pin 8 0
+    , Numeric Pin 9 0
+    , Numeric Sou 1 0
+    , Numeric Sou 2 0
+    , Numeric Sou 3 0
+    , Numeric Sou 4 0
+    , Numeric Sou 5 0
+    , Numeric Sou 6 0
+    , Numeric Sou 7 0
+    , Numeric Sou 8 0
+    , Numeric Sou 9 0
+    ]
