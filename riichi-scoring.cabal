@@ -61,6 +61,7 @@ library
     Paths_riichi_scoring
     Riichi.Context
     Riichi.Display
+    Riichi.Efficiency
     Riichi.Meld
     Riichi.Scoring
     Riichi.Shanten

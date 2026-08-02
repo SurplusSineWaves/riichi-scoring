@@ -69,3 +69,6 @@ simpler, and fixes getWaits.
 
 ## 0.6.0.0
 - Shanten calculation
+- Optimised formMelds by ensuring we don't consider a number of kans that
+  doesn't make sense with the given hand size. This however does require that
+  the original size of the hand is known by the function.

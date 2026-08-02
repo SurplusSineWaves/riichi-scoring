@@ -40,13 +40,13 @@ getWaits hand =
                         else []
                 -- Check waits from standard interpretations
                 -- If we have four melds already, a single remaning tile can wait for a pair
-                possibleMelds = formMelds hand
+                possibleMelds = formMelds' hand
                 fourMelds = possibleMelds & filter (\melds -> length melds == 4)
                 fourMeldsWaits = map ((hand \\) . concatMelds) fourMelds & filter (\diff -> length diff == 1) & concat
                 -- Finally, we might be waiting with three melds and a pair
                 threeMeldWaits = concat $ do
                     (pair, hand') <- findPairs hand
-                    melds <- formMelds hand'
+                    melds <- formMelds (length hand) hand'
                     if length melds /= 3
                         then return []
                         else

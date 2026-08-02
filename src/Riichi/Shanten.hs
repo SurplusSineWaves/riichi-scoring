@@ -1,6 +1,6 @@
 {- |
 Module      : Riichi.Shanten
-Description : Datatypes representing tiles and associated functions.
+Description : Datatypes and functions for calculating Shanten
 License     : BSD-3-Clause
 Maintainer  : surplussinewaves@gmail.com
 -}
@@ -12,6 +12,7 @@ import Data.List
 import Data.Maybe
 import Riichi.Meld
 import Riichi.Tile
+import Text.ParserCombinators.ReadP (count)
 
 data Taatsu = Taatsu Tile Tile deriving (Show, Eq, Ord)
 
@@ -30,11 +31,24 @@ getShanten hand
 
 basicShanten :: Hand -> Int
 basicShanten hand = minimum $ do
-    let meldss = formMelds hand
+    -- The combinatorics can blow up here, especially on a hand like 1111p 2222p 3333p 4444p rr
+    -- Need to try to prune out as many cases as we can, and we must dispose of cases that find so
+    -- many taatsu or melds that shanten is negative!
+    --
+    -- The number of kans can be limited by the hand size.
+    -- If no kans, then the hand is 13 for tenpai, iishanten etc, or 14 for complete.
+    -- If 1 kan, this becomes 14 / 15. 2 kans we get 15 / 16, etc.
+    -- Therefore number of kans is <= hand length - 13, and  >= hand size - 14
+    let size = length hand
+    let meldss =
+            formMelds' hand
+                -- This optimisation alone gets the 1111222233334444p rr example down from 30+ seconds to <1 second!
+                & filter (\melds -> let kans = countKans melds in size - 14 <= kans && kans <= size - 13)
     melds <- meldss
-    let partialss = splitAcrossSuits formPartials (hand \\ concatMelds melds)
-    partials <- partialss
     let m = length melds
+    -- Don't bother if the number of partials pushes us past 5 blocks
+    let partialss = splitAcrossSuits (formPartials (5 - m)) (hand \\ concatMelds melds)
+    partials <- partialss
     let (t, p) = countTatsuPairs partials
     return $ 8 - (2 * m) - min (t + p) (4 - m) - (if p >= 1 && (m + t + p >= 5) then 1 else 0)
 
@@ -59,24 +73,26 @@ countTatsuPairs partials = (numTatsu, numPairs)
     numTatsu = length $ lefts partials
     numPairs = num - numTatsu
 
-formPartials :: Hand -> [[Partial]]
-formPartials [] = [[]]
-formPartials [_] = [[]]
-formPartials hand@(tile1 : hand') =
+formPartials :: Int -> Hand -> [[Partial]]
+formPartials 0 _ = [[]]
+formPartials _ [] = [[]]
+formPartials _ [_] = [[]]
+formPartials n hand@(tile1 : hand') =
     let
         -- Get all sets of 2 tiles, including the first tile
         doubles = do
             tile2 <- hand'
             return [tile1, tile2]
         partials =
-            formPartials (tail hand) ++ do
+            formPartials n (tail hand) ++ do
                 [tile1, tile2] <- doubles
                 partial <- maybeToList $ mkPartial tile1 tile2
-                map (partial :) $ formPartials (hand' \\ [tile2])
+                map (partial :) $ formPartials (n - 1) (hand' \\ [tile2])
      in
         partials
-            & sortBy (\x y -> compare (length x) (length y))
+            -- & sortBy (\x y -> compare (length x) (length y))
             & map sort
+            & sort
             & group
             & map head
 

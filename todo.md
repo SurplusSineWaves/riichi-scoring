@@ -60,3 +60,21 @@ Target:
 Add logic for Shanten calculation, and support for basic "tile efficiency"
 strategy calculations (given a hand, which discard leaves the most chances to
 reduce shanten on the next draw?).
+
+Note that it is possible that interpreting a hand with more taatsu and less
+melds can give lower shanten. It could happen, then, that a hand has called a
+meld - so that meld is fixed - but out algorithm for shanten calculation won't
+fix this meld and might find lower shanten by interpreting the hand without the
+meld. Ideally this should be avoided. In practice I feel this isn't worth
+worrying about though, for now at least. Even if the hand has more than 14
+tiles, so that a Kan is necessarily present, we'll permit ourselves to consider
+that Kan's tiles as forming Taatsu. Is there a case in which this gives shanten
+less than -1? Yes! With some Kans, you can get interpretations where the number
+of melds and taatsu / pairs exceeds 5! That definitely does need to be fixed...
+Also, some more pruning of the search tree is required, things need to be
+optimised. I notice when calculating shanten of tricky hands with many Kans, the
+combinatorics can blow up too much and the program slows to a crawl..
+
+Optimisations made, comments added. Now considering whether formPartials should
+be passed an int so it can limit recursion depth (don't find more than x
+partials since we already found 5-x melds).

@@ -206,12 +206,25 @@ form3Melds hand@(tile : tiles) =
                 & groupBy (\x y -> length x == length y)
             )
 
--- | Given a hand, return all the possible ways of interpreting it as a sequence of melds, including those that do not use all tiles.
-formMelds :: Hand -> [[Meld]]
-formMelds hand = do
-    (kans, hand') <- findKans hand
+{- | Given a hand, return all the possible ways of interpreting it as a sequence of melds, including those that do not use all tiles
+| (but still ensuring there are never more than 4 melds). We need to know the size of the original hand to limit how many kans are possible
+| (eg can't have a kan in a 13 tile hand). Sometimes a pair has already been trimmed off a hand before being fed to this function, hence the
+| need to pass the size value manually.
+-}
+formMelds :: Int -> Hand -> [[Meld]]
+formMelds size hand = do
+    (kans, hand') <-
+        findKans hand
+            & filter (\(kans, _) -> let num = length kans in size - 14 <= num && num <= size - 13)
     melds <- splitAcrossSuits form3Melds hand'
-    return $ kans ++ melds
+    let kans_melds = kans ++ melds
+    if length kans_melds <= 4
+        then return kans_melds
+        else []
+
+-- | Use this when the size of the size of the original hand is just the length of the hand being passed in.
+formMelds' :: Hand -> [[Meld]]
+formMelds' hand = formMelds (length hand) hand
 
 -- | Given a hand, return all the possible ways of spliting the entire hand into chis, pons and kans
 formComplete3Melds :: Hand -> [[Meld]]
@@ -248,16 +261,25 @@ formComplete3Melds hand@(tile : tiles) =
             & map head
 
 {- | Given a hand, return all the possible ways of interpreting it as a sequence of melds which includes all tiles.
-| In other words, formCompleteMelds always returns a strict subset of what formMelds returns.
+| In other words, formCompleteMelds always returns a strict subset of what formMelds returns. We need to know the
+| size of the original hand to limit how many kans are possible (eg can't have a kan in a 13 tile hand). Sometimes
+| a pair has already been trimmed off a hand before being fed to this function, hence the need to pass the size value
+| manually.
 -}
-formCompleteMelds :: Hand -> [[Meld]]
-formCompleteMelds hand = do
-    (kans, hand') <- findKans hand
+formCompleteMelds :: Int -> Hand -> [[Meld]]
+formCompleteMelds size hand = do
+    (kans, hand') <-
+        findKans hand
+            & filter (\(kans, _) -> let num = length kans in size - 14 <= num && num <= size - 13)
     melds <- splitAcrossSuits formComplete3Melds hand'
     let kans_melds = kans ++ melds
     if length kans_melds == 4
         then return kans_melds
         else []
+
+-- | Use this when the size of the size of the original hand is just the length of the hand being passed in.
+formCompleteMelds' :: Hand -> [[Meld]]
+formCompleteMelds' hand = formCompleteMelds (length hand) hand
 
 -- | Count the tiles in a list of melds
 meldsLength :: [Meld] -> Int
@@ -281,7 +303,7 @@ findPairs hand =
         & filter (\list -> 2 <= length list)
         & map ((\tile -> (Pair tile, hand \\ [tile, tile])) . head)
 
--- | Find all the ways of pulling kans out of a hand. In each case pair the set of kans with what remains of the hand
+-- | Find all the ways of pulling kans out of a hand. In each case pair the set of kans with what remains of the hand.
 findKans :: Hand -> [([Meld], Hand)]
 findKans hand =
     hand
@@ -292,6 +314,10 @@ findKans hand =
         & subsequences
         -- & tail
         & map (\kans -> (kans, hand \\ concat [replicate 4 tile | Kan tile _ <- kans]))
+
+-- | Count the kans in a list of melds
+countKans :: [Meld] -> Int
+countKans melds = length (filter meldIsKan melds)
 
 -- interpretHand assumes the hand consists of a pair and 4 melds (chis pons or kans).
 -- An InterpretedHand can then be passed on to other functions to check for yakus.
@@ -308,7 +334,7 @@ interpretHand hand =
         possible_pairs = hand & findPairs
         pairs_melds = do
             (pair, hand') <- possible_pairs
-            melds <- formCompleteMelds hand'
+            melds <- formCompleteMelds (length hand) hand'
             return (pair, melds)
      in
         pairs_melds
