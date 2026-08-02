@@ -3,7 +3,7 @@ This package provides a CLI tool with commands for determining the yaku, fu, and
 The CLI tool supplied is the riichi command. Help information is as follows:
 
     Command riichi:
-        Possible subcommands: yaku, waits, score, shanten (default = yaku)
+        Possible subcommands: yaku, waits, score, shanten, discard (default = yaku)
 
     Usage:
         riichi <subcommand> "<hand>"

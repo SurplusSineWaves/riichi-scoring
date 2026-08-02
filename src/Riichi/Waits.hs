@@ -12,7 +12,10 @@ import GHC.IO.Handle (noNewlineTranslation)
 import Riichi.Meld
 import Riichi.Tile
 
--- | Get the waits of a hand, represented as a list of tiles.
+{- | Get the waits of a hand, represented as a list of tiles. This can also be accomplished via the improvements function,
+| efficiency module, but getWaits is faster as it uses the fact that the hand is in tenpai.
+| In fact, improvements now deferes to getWaits when the given hand is in tenpai.
+-}
 getWaits :: Hand -> [Tile]
 getWaits hand =
     if length hand < 13

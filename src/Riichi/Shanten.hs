@@ -34,16 +34,7 @@ basicShanten hand = minimum $ do
     -- The combinatorics can blow up here, especially on a hand like 1111p 2222p 3333p 4444p rr
     -- Need to try to prune out as many cases as we can, and we must dispose of cases that find so
     -- many taatsu or melds that shanten is negative!
-    --
-    -- The number of kans can be limited by the hand size.
-    -- If no kans, then the hand is 13 for tenpai, iishanten etc, or 14 for complete.
-    -- If 1 kan, this becomes 14 / 15. 2 kans we get 15 / 16, etc.
-    -- Therefore number of kans is <= hand length - 13, and  >= hand size - 14
-    let size = length hand
-    let meldss =
-            formMelds' hand
-                -- This optimisation alone gets the 1111222233334444p rr example down from 30+ seconds to <1 second!
-                & filter (\melds -> let kans = countKans melds in size - 14 <= kans && kans <= size - 13)
+    let meldss = formMelds' hand
     melds <- meldss
     let m = length melds
     -- Don't bother if the number of partials pushes us past 5 blocks

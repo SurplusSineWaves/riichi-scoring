@@ -72,3 +72,5 @@ simpler, and fixes getWaits.
 - Optimised formMelds by ensuring we don't consider a number of kans that
   doesn't make sense with the given hand size. This however does require that
   the original size of the hand is known by the function.
+- Now have tile efficiency, driven by shanten calculations, which allows for a
+  "discard" command that recommends the most efficient discards.

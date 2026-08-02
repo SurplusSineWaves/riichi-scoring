@@ -13,6 +13,7 @@ import Data.Function
 import Data.List (intercalate, intersperse, sort)
 import Data.Monoid (getSum)
 import Riichi.Context
+import Riichi.Efficiency
 import Riichi.Meld
 import Riichi.Scoring
 import Riichi.Shanten
@@ -83,7 +84,7 @@ displayHandYaku hand = do
 displayHandWaits :: Hand -> IO ()
 displayHandWaits hand = do
     let waits = getWaits hand
-    putStrLn $ "Waits are: " ++ intercalate ", " (waits & map show)
+    putStrLn $ "Waits are: " ++ intercalate ", " (map show waits)
 
 -- | Implements the "score" command for the CLI.
 displayHandScore :: Hand -> IO ()
@@ -146,3 +147,8 @@ displayHandShanten hand = do
         0 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Tenpai)"
         1 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Iishanten)"
         _ -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten")
+
+displayHandDiscard :: Hand -> IO ()
+displayHandDiscard hand = do
+    let discards = optimalDiscards hand
+    putStrLn $ "Optimal discards are: " ++ intercalate ", " (map show discards)

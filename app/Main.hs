@@ -30,13 +30,14 @@ main = do
             | arg1 == "waits" -> displayHandWaits $ mkHand arg2
             | arg1 == "score" -> displayHandScore $ mkHand arg2
             | arg1 == "shanten" -> displayHandShanten $ mkHand arg2
+            | arg1 == "discard" -> displayHandDiscard $ mkHand arg2
             | otherwise -> putStrLn "Command not recognised"
 
 helpString :: String
 helpString =
     "Command riichi: version = "
         ++ showVersion version
-        ++ " \n\tPossible subcommands: yaku, waits, score, shanten (default = yaku)\n\nUsage:\
+        ++ " \n\tPossible subcommands: yaku, waits, score, shanten, discard (default = yaku)\n\nUsage:\
            \\n\triichi <subcommand> \"<hand>\"\
            \\n\n\t\"yaku\" and \"score\" subcommands expect a full hand.\
            \\n\t\"waits\" subcommand expects a hand that is tenpai.\
