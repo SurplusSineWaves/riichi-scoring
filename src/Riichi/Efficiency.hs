@@ -14,6 +14,10 @@ import Riichi.Shanten
 import Riichi.Tile
 import Riichi.Waits
 
+{- | Find the optimal discards for a hand that is ready to discard. Here, "optimal" means that the chosen
+| discard does not increase the shanten, and among such tiles leaves the most possible improvement tiles
+| that can be drawn. An improvement tile is one that reduces shanten.
+-}
 optimalDiscards :: Hand -> [Tile]
 optimalDiscards hand =
     counts
@@ -35,6 +39,7 @@ optimalDiscards hand =
             & maximumBy (\(_, x) (_, y) -> compare x y)
             & snd
 
+-- | Find all tiles that, if added to a supplied hand that is ready to draw, decrease shanten.
 improvements :: Hand -> [Tile]
 improvements hand = case currentShanten of
     -1 -> []
@@ -43,6 +48,10 @@ improvements hand = case currentShanten of
   where
     currentShanten = getShanten hand
 
+{- | Count how many improvements there are, yet to be drawn, for a given hand. The first input is a (possibly empty) list of
+| tiles that have already been discarded. This, together with the tiles in the hand, determines what count is assigned to each
+| potential improvement tile.
+-}
 countImprovements :: Hand -> Hand -> Int
 countImprovements alreadyDiscarded hand =
     let

@@ -14,10 +14,13 @@ import Riichi.Meld
 import Riichi.Tile
 import Text.ParserCombinators.ReadP (count)
 
+-- | A taatsu is an incomplete sequence. Useful for working out shanten.
 data Taatsu = Taatsu Tile Tile deriving (Show, Eq, Ord)
 
+-- | A partial is either a taatsu or a pair. Useful for working out shanten.
 type Partial = Either Taatsu Pair
 
+-- | Get the shanten of a hand.
 getShanten :: Hand -> Int
 getShanten hand
     | length hand `elem` [13, 14] = if 0 `elem` list then 0 else minimum list
@@ -29,6 +32,7 @@ getShanten hand
     b = basicShanten hand
     list = [p, o, b]
 
+-- | Get the shanten of a hand with respect to a standard 4 melds and a pair complete hand.
 basicShanten :: Hand -> Int
 basicShanten hand = minimum $ do
     -- The combinatorics can blow up here, especially on a hand like 1111p 2222p 3333p 4444p rr
@@ -40,15 +44,17 @@ basicShanten hand = minimum $ do
     -- Don't bother if the number of partials pushes us past 5 blocks
     let partialss = splitAcrossSuits (formPartials (5 - m)) (hand \\ concatMelds melds)
     partials <- partialss
-    let (t, p) = countTatsuPairs partials
+    let (t, p) = countTaatsuPairs partials
     return $ 8 - (2 * m) - min (t + p) (4 - m) - (if p >= 1 && (m + t + p >= 5) then 1 else 0)
 
+-- | Get the hand's shanten with respect to seven pairs.
 pairsShanten :: Hand -> Int
 pairsShanten hand = 6 - numPairs + max 0 (7 - uniqueTiles)
   where
     numPairs = length $ findPairs hand
     uniqueTiles = length $ map head $ group $ sort hand
 
+-- | Get the hand's shanten with respect to thirteen orphans.
 orphansShanten :: Hand -> Int
 orphansShanten hand = 13 - uniqueOrphans - pairs
   where
@@ -57,13 +63,18 @@ orphansShanten hand = 13 - uniqueOrphans - pairs
     uniqueOrphans = length $ map head groupedOrphans
     pairs = if any ((>= 2) . length) groupedOrphans then 1 else 0
 
-countTatsuPairs :: [Partial] -> (Int, Int)
-countTatsuPairs partials = (numTatsu, numPairs)
+-- | Given a sequence of partials, count how many are taatsi and pairs respectively.
+countTaatsuPairs :: [Partial] -> (Int, Int)
+countTaatsuPairs partials = (numTatsu, numPairs)
   where
     num = length partials
     numTatsu = length $ lefts partials
     numPairs = num - numTatsu
 
+{- | Form all sequences of partials within a hand, of length 0 up to the input integer. This way,
+| recursion depth can be limited by the integer input, which is useful for shanten calculations
+| when we need only consider 5 blocks.
+-}
 formPartials :: Int -> Hand -> [[Partial]]
 formPartials 0 _ = [[]]
 formPartials _ [] = [[]]
@@ -87,6 +98,7 @@ formPartials n hand@(tile1 : hand') =
             & group
             & map head
 
+-- | Attempt to make a partial from two tiles.
 mkPartial :: Tile -> Tile -> Maybe Partial
 mkPartial tile1@(Numeric suit1 val1 _) tile2@(Numeric suit2 val2 _)
     | suit1 /= suit2 = Nothing

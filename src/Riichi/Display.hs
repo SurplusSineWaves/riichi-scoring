@@ -139,6 +139,7 @@ displayHandScore hand = do
                             ++ toGreen (show (yakumans * 32000))
                             ++ " points for Non-Dealer."
 
+-- | Implements the "shanten" command for the CLI.
 displayHandShanten :: Hand -> IO ()
 displayHandShanten hand = do
     let shanten = getShanten hand
@@ -148,6 +149,7 @@ displayHandShanten hand = do
         1 -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten") ++ toBlue " (Iishanten)"
         _ -> putStrLn $ "Hand is: " ++ toMagenta (show shanten ++ " shanten")
 
+-- | Implements the "discard" command for the CLI.
 displayHandDiscard :: Hand -> IO ()
 displayHandDiscard hand = do
     let discards = optimalDiscards hand

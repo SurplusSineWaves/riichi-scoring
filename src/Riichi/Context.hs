@@ -358,9 +358,10 @@ mkYakumanContext hand Nothing _ =
                                     }
                     else return Nothing
 
--- | Overarching context type
+-- | Overarching context type.
 data Context = Context (Maybe InterpretedHand) HandContext (Either YakuContext YakumanContext)
 
+-- | Get the dora for a given hand context.
 getContextDora :: Context -> Dora
 getContextDora (Context _ (HandContext{dora}) _) = dora
 
