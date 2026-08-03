@@ -10,7 +10,7 @@ import ColourStrings
 import Control.Monad (forM, forM_, when)
 import Control.Monad.Trans
 import Data.Function
-import Data.List (intercalate, intersperse, sort)
+import Data.List (intercalate, intersperse, sort, (\\))
 import Data.Monoid (getSum)
 import Riichi.Context
 import Riichi.Efficiency
@@ -153,4 +153,21 @@ displayHandShanten hand = do
 displayHandDiscard :: Hand -> IO ()
 displayHandDiscard hand = do
     let discards = optimalDiscards hand
-    putStrLn $ "Optimal discards are: " ++ intercalate ", " (map show discards)
+    putStrLn $ toMagenta "Optimal discards are: " ++ intercalate ", " (map show discards)
+
+-- | Implements the "live" command for the CLI
+displayLiveMode :: Hand -> IO ()
+displayLiveMode hand = do
+    displayHandDiscard hand
+    putStrLn $ toGreen "\nChoose a discard:"
+    discard <- head . mkHand <$> getLine
+    putStrLn $ toGreen "Enter drawn tile:"
+    drawn <- head . mkHand <$> getLine
+    let hand' = sort $ drawn : (hand \\ [discard])
+    putStrLn $ "\nCurrent hand:\n" ++ toBlue (intercalate ", " (map show hand')) ++ "\n"
+    let shanten = getShanten hand'
+    if shanten > -1
+        then
+            displayLiveMode $ drawn : (hand \\ [discard])
+        else
+            putStrLn $ toCyan "Hand is complete!"
